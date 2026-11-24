@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TableShift
 
-## Getting Started
+**Make desktop data work on mobile.** Paste a screenshot of a desktop data table and get the three mobile layout patterns that fit it best, with the reasoning.
 
-First, run the development server:
+## Run
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # then fill in the VISION_* values
+npm run dev                  # http://localhost:3000
+npm test                     # engine, parsing and assessment tests
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Vision provider (server-side only)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Analysis needs a vision-capable model. Configure it with environment variables; the key never reaches the browser.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Description |
+| --- | --- |
+| `VISION_PROVIDER` | `anthropic` or `openai-compatible` |
+| `VISION_API_KEY` | Provider API key |
+| `VISION_MODEL` | A vision-capable model id for that provider |
+| `VISION_BASE_URL` | Optional for `anthropic`. For `openai-compatible`, defaults to OpenAI; set it for OpenRouter, Vercel AI Gateway, Azure, local servers, etc. |
+| `VISION_TIMEOUT_MS` | Optional, 5000–120000 (default 55000) |
 
-## Learn More
+Without these the app still runs; Analyse reports that AI analysis isn't configured. `GET /api/analyse/status` reports configuration state without secrets.
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Layer A: vision** (`src/lib/vision`): provider adapters behind `VisionAnalysisProvider`; output validated with Zod; text sanitised; screenshot content treated as untrusted data.
+- **Layer B: recommendations** (`src/lib/recommendation`): deterministic rules and weighted scoring over the analysis. The AI never supplies scores or rankings.
+- `POST /api/analyse` validates, analyses in memory and returns JSON. Images are never stored or logged.

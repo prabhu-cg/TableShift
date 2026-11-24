@@ -34,10 +34,15 @@ export function AppHeader() {
           <InfoPanel id="about-panel" title="About TableShift">
             <p>
               TableShift helps product and UX designers find better mobile layouts for existing
-              desktop data tables. Paste a screenshot of a table and, in a future release, get
-              layout recommendations with visual previews.
+              desktop data tables. Paste a screenshot of a table and it suggests the three mobile
+              patterns that fit best, with the reasoning.
             </p>
-            <p>This early version only accepts a screenshot. It doesn&rsquo;t analyse it yet.</p>
+            <p>
+              Privacy: a screenshot is sent to the configured external AI provider only when you
+              select Analyse screenshot, to read the table structure. TableShift doesn&rsquo;t store
+              it or use it for training. The recommendations themselves are calculated by TableShift&rsquo;s
+              own rules.
+            </p>
           </InfoPanel>
         </div>
       )}

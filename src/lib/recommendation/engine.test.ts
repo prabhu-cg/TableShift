@@ -1,0 +1,124 @@
+import { describe, expect, it } from "vitest";
+import { CRITERIA } from "@/types/recommendation";
+import { analysis, col, contactsTable, financialTable, wideAdminTable } from "../test-fixtures";
+import { CRITERION_WEIGHTS } from "./constants";
+import { recommend } from "./engine";
+
+const ids = (a: ReturnType<typeof analysis>) => recommend(a).recommendations.map((r) => r.patternId);
+
+describe("recommend", () => {
+  it("is deterministic", () => {
+    const a = financialTable();
+    expect(recommend(a)).toEqual(recommend(structuredClone(a)));
+  });
+
+  it("returns three ranked recommendations out of five evaluated patterns", () => {
+    const set = recommend(wideAdminTable());
+    expect(set.recommendations.map((r) => r.rank)).toEqual([1, 2, 3]);
+    expect(set.evaluated).toHaveLength(5);
+    expect(set.evaluated.filter((e) => e.selected)).toHaveLength(3);
+    const scores = set.recommendations.map((r) => r.score);
+    expect([...scores].sort((a, b) => b - a)).toEqual(scores);
+  });
+
+  it("does not always return the same three patterns", () => {
+    const sets = [financialTable(), contactsTable(), wideAdminTable()].map((a) => ids(a).join(","));
+    expect(new Set(sets).size).toBeGreaterThanOrEqual(2);
+  });
+
+  it("ranks the horizontal table first for comparable financial data and caps cards", () => {
+    const set = recommend(financialTable());
+    expect(set.recommendations[0].patternId).toBe("horizontal-scroll");
+    const card = set.evaluated.find((e) => e.patternId === "card")!;
+    expect(card.score).toBeLessThanOrEqual(60);
+  });
+
+  it("keeps the horizontal table on top for a 7-column table that needs numeric comparison", () => {
+    const a = analysis([
+      col("Invoice", "text", "primary"),
+      col("Client", "text", "primary"),
+      col("Net", "currency", "secondary"),
+      col("Tax", "currency", "secondary"),
+      col("Total", "currency", "primary"),
+      col("Due", "date", "secondary"),
+      col("Ref", "text", "optional"),
+    ]);
+    const set = recommend(a);
+    expect(set.recommendations[0].patternId).toBe("horizontal-scroll");
+    // one critical column (Total) sits beyond the first screenful, so the cap of 80 is recorded
+    expect(set.recommendations[0].ruleNotes.some((n) => n.kind === "constraint")).toBe(true);
+  });
+
+  it("drops horizontal scrolling when many critical columns would be hidden", () => {
+    const cols = Array.from({ length: 9 }, (_, i) => col(`Metric ${i + 1}`, "currency", "primary"));
+    const hor = recommend(analysis(cols)).evaluated.find((e) => e.patternId === "horizontal-scroll")!;
+    expect(hor.score).toBeLessThanOrEqual(65);
+  });
+
+  it("penalises horizontal scrolling for wide tables with long text", () => {
+    const set = recommend(wideAdminTable());
+    const hor = set.evaluated.find((e) => e.patternId === "horizontal-scroll")!;
+    expect(hor.selected).toBe(false);
+    expect(set.recommendations[0].patternId).not.toBe("horizontal-scroll");
+  });
+
+  it("favours cards for small independent-record tables", () => {
+    expect(recommend(contactsTable()).recommendations[0].patternId).toBe("card");
+  });
+
+  it("score equals the weighted breakdown unless a hard constraint capped it", () => {
+    for (const a of [financialTable(), contactsTable(), wideAdminTable()]) {
+      for (const r of recommend(a).recommendations) {
+        const weighted = Math.round(
+          CRITERIA.reduce((s, c) => s + r.scoreBreakdown[c] * CRITERION_WEIGHTS[c], 0),
+        );
+        expect(Math.abs(weighted - r.uncappedScore)).toBeLessThanOrEqual(1); // rounding of breakdown
+        expect(r.score).toBeLessThanOrEqual(r.uncappedScore);
+        expect(r.score).toBeGreaterThanOrEqual(0);
+        expect(r.score).toBeLessThanOrEqual(100);
+      }
+    }
+  });
+
+  it("caps expandable rows when four or more columns are critical", () => {
+    const a = analysis([
+      col("A", "text", "primary"),
+      col("B", "text", "primary"),
+      col("C", "text", "primary"),
+      col("D", "text", "primary"),
+      col("E", "text", "optional"),
+    ]);
+    const exp = recommend(a).evaluated.find((e) => e.patternId === "expandable-rows")!;
+    expect(exp.score).toBeLessThanOrEqual(62);
+  });
+
+  it("changes recommendations when the user corrects a data type", () => {
+    const before = analysis([
+      col("Name", "text", "primary"),
+      col("Q1", "text", "secondary"),
+      col("Q2", "text", "secondary"),
+      col("Q3", "text", "secondary"),
+    ]);
+    const after = analysis(before.columns.map((c) => (c.name.startsWith("Q") ? { ...c, dataType: "number" as const } : c)));
+    expect(after.features.requiresCrossColumnComparison).toBe(true);
+    const cardBefore = recommend(before).evaluated.find((e) => e.patternId === "card")!.score;
+    const cardAfter = recommend(after).evaluated.find((e) => e.patternId === "card")!.score;
+    expect(cardAfter).toBeLessThan(cardBefore);
+  });
+
+  it("separates visible and secondary fields and excludes action columns", () => {
+    const a = analysis([
+      col("Name", "text", "primary"),
+      col("Email", "text", "secondary"),
+      col("Plan", "text", "secondary"),
+      col("Seats", "number", "optional"),
+      col("Region", "text", "optional"),
+      col("", "action", "optional"),
+    ]);
+    for (const r of recommend(a).recommendations) {
+      const all = [...r.visibleFields, ...r.secondaryFields];
+      expect(all.sort()).toEqual(["Email", "Name", "Plan", "Region", "Seats"]);
+      expect(r.visibleFields).toContain("Name");
+    }
+  });
+});

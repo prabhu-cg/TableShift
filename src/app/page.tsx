@@ -15,7 +15,7 @@ export default function Home() {
         <Workspace />
       </main>
       <footer className="px-(--spacing-gutter) py-8 text-center text-sm text-ink-muted">
-        TableShift · V1.0
+        TableShift · V1.1
       </footer>
     </>
   );

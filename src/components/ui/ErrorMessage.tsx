@@ -1,12 +1,14 @@
+import type { ReactNode } from "react";
 import { AlertCircle, X } from "lucide-react";
-import type { ScreenshotError } from "@/types/screenshot";
 
 interface ErrorMessageProps {
-  error: ScreenshotError;
+  error: { title: string; message: string };
   onDismiss?: () => void;
+  /** Action buttons (e.g. Retry) shown below the message. */
+  children?: ReactNode;
 }
 
-export function ErrorMessage({ error, onDismiss }: ErrorMessageProps) {
+export function ErrorMessage({ error, onDismiss, children }: ErrorMessageProps) {
   return (
     <div
       role="alert"
@@ -16,6 +18,7 @@ export function ErrorMessage({ error, onDismiss }: ErrorMessageProps) {
       <div className="min-w-0 flex-1">
         <p className="text-[0.9375rem] font-semibold text-error-ink">{error.title}</p>
         <p className="mt-1 text-sm leading-relaxed text-ink">{error.message}</p>
+        {children && <div className="mt-3 flex flex-wrap gap-2">{children}</div>}
       </div>
       {onDismiss && (
         <button
