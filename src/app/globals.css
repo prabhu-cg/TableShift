@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* ---------- TableShift design tokens ---------- */
+@theme {
+  /* Colour */
+  --color-canvas: #ffffff;
+  --color-ink: #252525;
+  --color-ink-muted: #6b6b6b; /* #777 darkened slightly to pass AA (4.5:1) on white and surface */
+  --color-surface: #f7f7f5;
+  --color-line: #e8e8e5;
+  --color-line-strong: #cfcfca;
+  --color-accent: #c77935;
+  --color-accent-ink: #94561f; /* accessible accent for text on light backgrounds */
+  --color-accent-soft: #fbf1e8;
+  --color-success: #26845b;
+  --color-warning: #c48a32;
+  --color-error: #c64d4d;
+  --color-error-ink: #a63a3a;
+  --color-error-soft: #fbefef;
+
+  /* Typography */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --text-display: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+  --text-display--line-height: 1.08;
+  --text-display--letter-spacing: -0.03em;
+
+  /* Radius */
+  --radius-control: 0.625rem;
+  --radius-card: 1rem;
+  --radius-panel: 1.5rem;
+
+  /* Shadow */
+  --shadow-card: 0 1px 2px rgb(37 37 37 / 0.04), 0 4px 16px rgb(37 37 37 / 0.04);
+  --shadow-raised: 0 2px 4px rgb(37 37 37 / 0.06), 0 12px 32px rgb(37 37 37 / 0.08);
+
+  /* Spacing scale (use via p-*, gap-* utilities; named steps for layout rhythm) */
+  --spacing-gutter: clamp(1rem, 0.5rem + 2vw, 2rem);
+  --spacing-section: clamp(2rem, 1rem + 4vw, 4rem);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
