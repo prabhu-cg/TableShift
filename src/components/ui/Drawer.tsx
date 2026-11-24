@@ -33,21 +33,21 @@ export function Drawer({ open, onClose, title, description, children }: DrawerPr
     >
       <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
         <div>
-          <h2 id={titleId} className="text-2xl">
+          <h2 id={titleId} className="text-xl">
             {title}
           </h2>
-          {description && <p className="mt-1 text-text-subtle">{description}</p>}
+          {description && <p className="mt-1 text-sm text-text-muted">{description}</p>}
         </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="-mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors duration-150 hover:bg-surface-muted hover:text-text"
+          className="-mr-2 inline-flex shrink-0 items-center justify-center rounded-full p-2 text-text-muted transition-colors duration-150 hover:bg-surface-muted hover:text-text"
         >
           <X className="size-5" aria-hidden="true" />
         </button>
       </div>
-      <div className="space-y-4 px-6 py-6 leading-relaxed text-text-muted">{children}</div>
+      <div className="space-y-4 px-6 py-5 text-sm leading-relaxed text-text-muted">{children}</div>
     </dialog>
   );
 }

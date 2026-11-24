@@ -60,7 +60,7 @@ export function Workspace() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-(--spacing-gutter) py-(--spacing-section)">
+    <div className={`mx-auto w-full max-w-6xl px-(--spacing-gutter) ${showResults ? "py-4 sm:py-5" : "py-(--spacing-section)"}`}>
       {!showResults && (
         <div className="mb-8 max-w-3xl sm:mb-10">
           <h1 className="text-4xl leading-[1.05] text-text sm:text-6xl">
@@ -73,7 +73,7 @@ export function Workspace() {
         </div>
       )}
 
-      <div className="space-y-4 rounded-panel border border-border bg-surface p-5 sm:p-8">
+      <div className={`space-y-4 rounded-panel border border-border bg-surface ${showResults ? "p-4 sm:p-5" : "p-5 sm:p-8"}`}>
         {error && <ErrorMessage error={error} onDismiss={clearError} />}
 
         {showResults && screenshot && state.status === "success" ? (

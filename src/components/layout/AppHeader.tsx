@@ -15,11 +15,11 @@ export function AppHeader() {
     <header className="border-b border-border bg-surface">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-(--spacing-gutter) py-3">
         <div className="min-w-0">
-          <Link href="/" aria-label="TableShift home" className="inline-block">
+          <Link href="/" aria-label="TableShift home" className="flex w-fit">
             <BrandLogo />
           </Link>
           {/* pl-10 aligns the tagline with the wordmark (30px mark + 10px gap) */}
-          <p className="mt-1 pl-10 text-xs leading-tight text-text-subtle">Make desktop data work on mobile.</p>
+          <p className="pl-10 text-xs leading-tight text-text-subtle">Make desktop data work on mobile.</p>
         </div>
         <div className="flex items-center gap-1">
           <button
