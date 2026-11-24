@@ -29,8 +29,8 @@ const IMPORTANCE_LABEL: Record<Importance, string> = {
 };
 
 const field =
-  "min-h-11 w-full rounded-control border border-line-strong bg-canvas px-3 text-[0.9375rem] text-ink";
-const labelCls = "mb-1 block text-xs font-medium text-ink-muted md:sr-only";
+  "min-h-11 w-full rounded-xl border border-control bg-surface px-3 text-sm text-text transition-colors duration-150 hover:bg-surface-muted";
+const labelCls = "mb-1 block text-xs font-medium text-text-subtle";
 
 export function ColumnReview({ columns, original, onChange, onReset }: ColumnReviewProps) {
   const changed = columns.some((c, i) => {
@@ -41,11 +41,11 @@ export function ColumnReview({ columns, original, onChange, onReset }: ColumnRev
   return (
     <section aria-labelledby="structure-title" className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="max-w-2xl">
-          <h2 id="structure-title" className="text-xl font-semibold tracking-tight">
+        <div className="max-w-xl">
+          <h2 id="structure-title" className="text-3xl text-text">
             Detected table structure
           </h2>
-          <p className="mt-1 text-sm leading-relaxed text-ink-muted">
+          <p className="mt-1 leading-relaxed text-text-muted">
             Check what the AI read from your screenshot. Correct a label, data type or importance and the
             recommendations below update straight away.
           </p>
@@ -53,6 +53,7 @@ export function ColumnReview({ columns, original, onChange, onReset }: ColumnRev
         {changed && (
           <PrimaryButton
             variant="ghost"
+            size="sm"
             onClick={onReset}
             icon={<RotateCcw className="size-4" aria-hidden="true" />}
           >
@@ -61,28 +62,15 @@ export function ColumnReview({ columns, original, onChange, onReset }: ColumnRev
         )}
       </div>
 
-      <div className="overflow-hidden rounded-card border border-line">
-        <div
-          className="hidden gap-3 border-b border-line bg-surface px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-ink-muted md:grid md:grid-cols-[1.3fr_1fr_1fr_9rem_1.4fr]"
-          aria-hidden="true"
-        >
-          <span>Column</span>
-          <span>Data type</span>
-          <span>Importance</span>
-          <span>Confidence</span>
-          <span>Sample values</span>
-        </div>
-        <ul className="divide-y divide-line">
-          {columns.map((c, i) => {
-            const o = original[i];
-            const edited = !!o && (c.name !== o.name || c.dataType !== o.dataType || c.importance !== o.importance);
-            const level = columnConfidenceLevel(c);
-            const readable = c.sampleValues.filter((v) => v && v !== UNREADABLE);
-            return (
-              <li
-                key={c.id}
-                className="grid gap-3 px-4 py-4 md:grid-cols-[1.3fr_1fr_1fr_9rem_1.4fr] md:items-center md:py-3"
-              >
+      <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+        {columns.map((c, i) => {
+          const o = original[i];
+          const edited = !!o && (c.name !== o.name || c.dataType !== o.dataType || c.importance !== o.importance);
+          const level = columnConfidenceLevel(c);
+          const readable = c.sampleValues.filter((v) => v && v !== UNREADABLE);
+          return (
+            <li key={c.id} className="space-y-3 p-4">
+              <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr_1fr]">
                 <div>
                   <label htmlFor={`${c.id}-name`} className={labelCls}>
                     Column name
@@ -130,26 +118,26 @@ export function ColumnReview({ columns, original, onChange, onReset }: ColumnRev
                     ))}
                   </select>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <ConfidenceBadge level={level} />
-                  {edited && (
-                    <span className="rounded bg-accent-soft px-1.5 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-accent-ink">
-                      Edited
-                    </span>
-                  )}
-                </div>
-                <p className="min-w-0 text-sm text-ink-muted">
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <ConfidenceBadge level={level} />
+                {edited && (
+                  <span className="rounded-full bg-accent px-2 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-primary-text">
+                    Edited
+                  </span>
+                )}
+                <p className="min-w-0 flex-1 basis-48 text-text-subtle">
                   {readable.length ? (
-                    <span className="line-clamp-2 break-words">{readable.slice(0, 3).join(" · ")}</span>
+                    <span className="line-clamp-1 break-words">{readable.slice(0, 3).join(" · ")}</span>
                   ) : (
                     <span className="italic">No readable values</span>
                   )}
                 </p>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }

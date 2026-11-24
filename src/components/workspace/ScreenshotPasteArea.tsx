@@ -15,7 +15,7 @@ export function ScreenshotPasteArea({ isProcessing, compact = false }: Screensho
       role="group"
       aria-label="Screenshot paste area. Press Control V or Command V to paste a screenshot."
       aria-busy={isProcessing}
-      className={`flex w-full flex-col items-center justify-center rounded-panel border-2 border-dashed border-line-strong bg-surface text-center transition-colors hover:border-accent focus-visible:border-accent ${
+      className={`flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-border-strong bg-surface-muted text-center transition-colors duration-150 hover:border-primary hover:bg-accent focus-visible:border-primary focus-visible:bg-accent ${
         compact ? "px-6 py-8" : "min-h-72 px-6 py-12 sm:min-h-80"
       }`}
     >
@@ -23,9 +23,9 @@ export function ScreenshotPasteArea({ isProcessing, compact = false }: Screensho
         <LoadingIndicator label="Reading screenshot…" />
       ) : compact ? (
         <div className="flex flex-col items-center gap-2">
-          <ClipboardPaste className="size-6 text-accent-ink" aria-hidden="true" />
-          <p className="font-medium">Paste your new screenshot</p>
-          <p className="text-sm text-ink-muted">
+          <ClipboardPaste className="size-6 text-primary-text" aria-hidden="true" />
+          <p className="font-medium text-text">Paste your new screenshot</p>
+          <p className="text-text-muted">
             <Keys />
           </p>
         </div>
@@ -47,16 +47,13 @@ export function ScreenshotPasteArea({ isProcessing, compact = false }: Screensho
   );
 }
 
+const kbd =
+  "rounded-md border border-border-strong bg-surface px-1.5 py-0.5 text-[0.8125rem] font-medium text-text";
+
 function Keys() {
   return (
     <>
-      <kbd className="rounded border border-line-strong bg-canvas px-1.5 py-0.5 font-sans text-[0.8125rem] font-medium text-ink">
-        Ctrl + V
-      </kbd>{" "}
-      or{" "}
-      <kbd className="rounded border border-line-strong bg-canvas px-1.5 py-0.5 font-sans text-[0.8125rem] font-medium text-ink">
-        Cmd + V
-      </kbd>
+      <kbd className={kbd}>Ctrl + V</kbd> or <kbd className={kbd}>Cmd + V</kbd>
     </>
   );
 }

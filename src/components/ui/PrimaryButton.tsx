@@ -1,20 +1,28 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 type Variant = "primary" | "secondary" | "ghost";
+type Size = "md" | "sm";
 
 interface PrimaryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
+  size?: Size;
   icon?: ReactNode;
 }
 
 const variants: Record<Variant, string> = {
-  primary: "bg-ink text-white hover:bg-black shadow-card",
-  secondary: "bg-canvas text-ink border border-line-strong hover:bg-surface",
-  ghost: "bg-transparent text-ink-muted hover:bg-surface hover:text-ink",
+  // Amber is a fill; text on amber is charcoal.
+  primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
+  secondary: "border border-border-strong bg-surface text-text hover:bg-surface-muted",
+  ghost: "text-text-muted hover:bg-surface-muted hover:text-text",
+};
+const sizes: Record<Size, string> = {
+  md: "min-h-11 px-5",
+  sm: "min-h-9 px-4",
 };
 
 export function PrimaryButton({
   variant = "primary",
+  size = "md",
   icon,
   className = "",
   children,
@@ -24,7 +32,7 @@ export function PrimaryButton({
   return (
     <button
       type={type}
-      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-5 text-[0.9375rem] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-full text-sm font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${sizes[size]} ${variants[variant]} ${className}`}
       {...rest}
     >
       {icon}

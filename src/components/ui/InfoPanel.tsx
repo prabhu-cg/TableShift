@@ -2,26 +2,27 @@ import type { ReactNode } from "react";
 import { Info } from "lucide-react";
 
 interface InfoPanelProps {
-  title: string;
+  title?: string;
   children: ReactNode;
-  id?: string;
+  tone?: "neutral" | "warning";
 }
 
-export function InfoPanel({ title, children, id }: InfoPanelProps) {
+/** Inline notice on a sand wash. No resting shadow. */
+export function InfoPanel({ title, children, tone = "neutral" }: InfoPanelProps) {
   return (
-    <section
-      id={id}
-      aria-labelledby={id ? `${id}-title` : undefined}
-      className="rounded-card border border-line bg-surface p-5"
+    <div
+      className={`flex items-start gap-3 rounded-xl border p-4 ${
+        tone === "warning" ? "border-warning/40 bg-accent" : "border-border bg-surface-muted"
+      }`}
     >
-      <h2
-        id={id ? `${id}-title` : undefined}
-        className="flex items-center gap-2 text-[0.9375rem] font-semibold"
-      >
-        <Info className="size-4 text-accent-ink" aria-hidden="true" />
-        {title}
-      </h2>
-      <div className="mt-2 space-y-2 text-sm leading-relaxed text-ink-muted">{children}</div>
-    </section>
+      <Info
+        className={`mt-0.5 size-4 shrink-0 ${tone === "warning" ? "text-warning" : "text-primary-text"}`}
+        aria-hidden="true"
+      />
+      <div className="min-w-0 space-y-1 leading-relaxed text-text-muted">
+        {title && <p className="font-semibold text-text">{title}</p>}
+        {children}
+      </div>
+    </div>
   );
 }

@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeft, RefreshCw, TriangleAlert } from "lucide-react";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 import type { TableAnalysis, TableColumn } from "@/types/analysis";
 import type { ScreenshotInput } from "@/types/screenshot";
 import { assessAnalysis, columnConfidenceLevel } from "@/lib/analysis-assessment";
 import { deriveFeatures } from "@/lib/features";
 import { recommend } from "@/lib/recommendation/engine";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { InfoPanel } from "@/components/ui/InfoPanel";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { ConfidenceBadge, SourceTag } from "@/components/ui/ConfidenceBadge";
 import { providerLabel } from "@/hooks/useProviderStatus";
@@ -45,14 +46,14 @@ export function ResultsView({ screenshot, analysis, provider, onBack, onRetry }:
   const overall = columnConfidenceLevel({ name: "x", sampleValues: ["x"], confidence: analysis.confidence });
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xl font-semibold tracking-tight">Analysis results</h2>
+        <h1 className="text-3xl text-text sm:text-4xl">Analysis results</h1>
         <div className="flex flex-wrap gap-2">
-          <PrimaryButton variant="secondary" onClick={onBack} icon={<ArrowLeft className="size-4" aria-hidden="true" />}>
+          <PrimaryButton variant="secondary" size="sm" onClick={onBack} icon={<ArrowLeft className="size-4" aria-hidden="true" />}>
             Back to screenshot
           </PrimaryButton>
-          <PrimaryButton variant="secondary" onClick={onRetry} icon={<RefreshCw className="size-4" aria-hidden="true" />}>
+          <PrimaryButton variant="secondary" size="sm" onClick={onRetry} icon={<RefreshCw className="size-4" aria-hidden="true" />}>
             Re-run analysis
           </PrimaryButton>
         </div>
@@ -60,127 +61,136 @@ export function ResultsView({ screenshot, analysis, provider, onBack, onRetry }:
 
       {assessment.status === "blocked" && (
         <ErrorMessage error={{ title: assessment.title!, message: assessment.message! }}>
-          <PrimaryButton variant="secondary" onClick={onRetry}>
+          <PrimaryButton variant="secondary" size="sm" onClick={onRetry}>
             Retry analysis
           </PrimaryButton>
-          <PrimaryButton variant="ghost" onClick={onBack}>
+          <PrimaryButton variant="ghost" size="sm" onClick={onBack}>
             Use a different screenshot
           </PrimaryButton>
         </ErrorMessage>
       )}
 
       {assessment.status === "caution" && (
-        <div role="status" className="flex items-start gap-3 rounded-card border border-warning/40 bg-accent-soft p-4 text-sm">
-          <TriangleAlert className="mt-0.5 size-5 shrink-0 text-accent-ink" aria-hidden="true" />
-          <p className="leading-relaxed">
-            <strong className="font-semibold">Some of this was hard to read.</strong> Detection confidence is{" "}
-            {Math.round(analysis.confidence * 100)}%. Review the detected columns below before relying on the
-            recommendations.
+        <InfoPanel tone="warning" title="Some of this was hard to read">
+          <p>
+            Detection confidence is {Math.round(analysis.confidence * 100)}%. Review the detected columns
+            before relying on the recommendations.
           </p>
-        </div>
+        </InfoPanel>
       )}
 
-      {/* Summary */}
-      <section aria-labelledby="summary-title" className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <figure className="overflow-hidden rounded-card border border-line bg-surface p-3">
-          {/* eslint-disable-next-line @next/next/no-img-element -- local blob URL */}
-          <img
-            src={screenshot.previewUrl}
-            alt="The screenshot that was analysed"
-            className="mx-auto max-h-64 w-auto max-w-full rounded-control border border-line bg-white object-contain"
-          />
-          <figcaption className="mt-2 text-center text-xs text-ink-muted">Original screenshot</figcaption>
-        </figure>
-        <div>
-          <h3 id="summary-title" className="text-xl font-semibold tracking-tight">
-            Table summary
-          </h3>
-          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
-            <Stat label="Columns" value={String(f.columnCount)} />
-            <Stat label="Rows read" value={String(f.rowCount)} />
-            <Stat label="Actions" value={analysis.actions.length ? analysis.actions.map((a) => a.label).filter(Boolean).join(", ") || String(analysis.actions.length) : "None"} />
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wider text-ink-muted">Detection</dt>
-              <dd className="mt-1">
-                <ConfidenceBadge level={overall} value={analysis.confidence} />
-              </dd>
-            </div>
-            <Stat label="Traits" value={traits(f) || "None notable"} className="col-span-2" />
-          </dl>
-          <p className="mt-4 text-xs leading-relaxed text-ink-muted">
-            Table structure was read by AI ({providerLabel(provider.name)}, {provider.model}). Rankings come
-            from TableShift&rsquo;s own rules, not from the AI.
-          </p>
-        </div>
-      </section>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
+        {/* Input side: what was analysed */}
+        <aside aria-label="Analysed screenshot and summary" className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+          <figure className="rounded-xl bg-surface-muted p-3">
+            {/* eslint-disable-next-line @next/next/no-img-element -- local blob URL */}
+            <img
+              src={screenshot.previewUrl}
+              alt="The screenshot that was analysed"
+              className="mx-auto max-h-64 w-auto max-w-full rounded-lg border border-border bg-surface object-contain"
+            />
+            <figcaption className="mt-2 text-center text-xs text-text-subtle">Original screenshot</figcaption>
+          </figure>
 
-      {analysis.observations.length > 0 || analysis.warnings.length > 0 ? (
-        <section aria-labelledby="obs-title" className="rounded-card border border-line bg-surface p-5">
-          <h3 id="obs-title" className="flex items-center gap-2 text-[0.9375rem] font-semibold">
-            Observations <SourceTag kind="ai" />
-          </h3>
-          <ul className="mt-3 space-y-1.5 text-sm leading-relaxed text-ink-muted">
-            {analysis.observations.map((o, i) => (
-              <li key={`o${i}`}>• {o}</li>
-            ))}
-            {analysis.warnings.map((w, i) => (
-              <li key={`w${i}`} className="text-ink">
-                <span className="font-medium">Warning:</span> {w}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {assessment.status !== "blocked" && (
-        <>
-          <ColumnReview
-            columns={columns}
-            original={analysis.columns}
-            onChange={(id, patch) => setEdits((e) => ({ ...e, [id]: { ...e[id], ...patch } }))}
-            onReset={() => setEdits({})}
-          />
-
-          {result && (
-            <section aria-labelledby="recs-title" className="space-y-5">
-              <div className="max-w-2xl">
-                <h2 id="recs-title" className="text-xl font-semibold tracking-tight">
-                  Recommended mobile layouts
-                </h2>
-                <p className="mt-1 text-sm leading-relaxed text-ink-muted">
-                  Five patterns were scored against your table&rsquo;s characteristics; these three fit best.
-                  Scores are calculated by explicit rules, so the same table always gives the same result.
-                </p>
+          <section aria-labelledby="summary-title">
+            <h2 id="summary-title" className="text-2xl text-text">
+              Table summary
+            </h2>
+            <dl className="mt-3 divide-y divide-border rounded-xl border border-border">
+              <Row label="Columns" value={String(f.columnCount)} />
+              <Row label="Rows read" value={String(f.rowCount)} />
+              <Row
+                label="Actions"
+                value={
+                  analysis.actions.length
+                    ? analysis.actions.map((a) => a.label).filter(Boolean).join(", ") || String(analysis.actions.length)
+                    : "None"
+                }
+              />
+              <div className="flex items-center justify-between gap-4 px-4 py-2.5">
+                <dt className="text-text-subtle">Detection</dt>
+                <dd>
+                  <ConfidenceBadge level={overall} value={analysis.confidence} />
+                </dd>
               </div>
-              <div className="grid gap-5 lg:grid-cols-1">
-                {result.recommendations.map((r) => (
-                  <RecommendationCard key={r.id} rec={r} />
+              <Row label="Traits" value={traits(f) || "None notable"} />
+            </dl>
+            <p className="mt-3 text-xs leading-relaxed text-text-subtle">
+              Table structure was read by AI ({providerLabel(provider.name)}, {provider.model}). Rankings
+              come from TableShift&rsquo;s own rules, not from the AI.
+            </p>
+          </section>
+
+          {(analysis.observations.length > 0 || analysis.warnings.length > 0) && (
+            <section aria-labelledby="obs-title" className="rounded-xl bg-surface-muted p-4">
+              <h3 id="obs-title" className="flex items-center gap-2 text-text">
+                Observations <SourceTag kind="ai" />
+              </h3>
+              <ul className="mt-3 space-y-1.5 leading-relaxed text-text-muted">
+                {analysis.observations.map((o, i) => (
+                  <li key={`o${i}`}>• {o}</li>
                 ))}
-              </div>
-              <div className="rounded-card border border-line p-4 text-sm">
-                <p className="font-medium">All patterns evaluated</p>
-                <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-ink-muted">
-                  {result.evaluated.map((e) => (
-                    <li key={e.patternId} className="tabular-nums">
-                      {e.pattern}: <span className={e.selected ? "font-medium text-ink" : ""}>{e.score}</span>
-                      {!e.selected && " (not selected)"}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                {analysis.warnings.map((w, i) => (
+                  <li key={`w${i}`} className="text-text">
+                    <span className="font-medium">Warning:</span> {w}
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
-        </>
-      )}
+        </aside>
+
+        {/* Output side: structure, then recommendations */}
+        {assessment.status !== "blocked" && (
+          <div className="min-w-0 space-y-10">
+            <ColumnReview
+              columns={columns}
+              original={analysis.columns}
+              onChange={(id, patch) => setEdits((e) => ({ ...e, [id]: { ...e[id], ...patch } }))}
+              onReset={() => setEdits({})}
+            />
+
+            {result && (
+              <section aria-labelledby="recs-title" className="space-y-5">
+                <div className="max-w-xl">
+                  <h2 id="recs-title" className="text-3xl text-text">
+                    Recommended mobile layouts
+                  </h2>
+                  <p className="mt-1 leading-relaxed text-text-muted">
+                    Five patterns were scored against your table&rsquo;s characteristics; these three fit
+                    best. Scores come from explicit rules, so the same table always gives the same result.
+                  </p>
+                </div>
+                <div className="space-y-5">
+                  {result.recommendations.map((r) => (
+                    <RecommendationCard key={r.id} rec={r} />
+                  ))}
+                </div>
+                <div className="rounded-xl border border-border p-4">
+                  <p className="font-medium text-text">All patterns evaluated</p>
+                  <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-text-muted">
+                    {result.evaluated.map((e) => (
+                      <li key={e.patternId} className="tabular-nums">
+                        {e.pattern}: <span className={e.selected ? "font-medium text-text" : ""}>{e.score}</span>
+                        {!e.selected && " (not selected)"}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function Stat({ label, value, className = "" }: { label: string; value: string; className?: string }) {
+function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className={className}>
-      <dt className="text-xs font-medium uppercase tracking-wider text-ink-muted">{label}</dt>
-      <dd className="mt-1 break-words text-[0.9375rem] font-medium">{value}</dd>
+    <div className="flex items-baseline justify-between gap-4 px-4 py-2.5">
+      <dt className="shrink-0 text-text-subtle">{label}</dt>
+      <dd className="break-words text-right font-medium text-text">{value}</dd>
     </div>
   );
 }

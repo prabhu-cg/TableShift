@@ -14,11 +14,11 @@ export function ImageMetadata({ screenshot }: { screenshot: ScreenshotInput }) {
     ["Format", TYPE_LABEL[screenshot.mimeType] ?? screenshot.mimeType],
   ];
   return (
-    <dl className="flex flex-wrap gap-x-8 gap-y-3">
+    <dl className="divide-y divide-border rounded-xl border border-border">
       {items.map(([label, value]) => (
-        <div key={label}>
-          <dt className="text-xs font-medium uppercase tracking-wider text-ink-muted">{label}</dt>
-          <dd className="mt-0.5 text-[0.9375rem] font-medium tabular-nums">{value}</dd>
+        <div key={label} className="flex items-baseline justify-between gap-4 px-4 py-2.5">
+          <dt className="text-text-subtle">{label}</dt>
+          <dd className="font-medium tabular-nums text-text">{value}</dd>
         </div>
       ))}
     </dl>

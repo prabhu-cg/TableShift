@@ -12,12 +12,12 @@ export function ErrorMessage({ error, onDismiss, children }: ErrorMessageProps) 
   return (
     <div
       role="alert"
-      className="flex items-start gap-3 rounded-card border border-error/30 bg-error-soft p-4"
+      className="flex items-start gap-3 rounded-xl border border-danger/30 bg-danger-surface p-4"
     >
-      <AlertCircle className="mt-0.5 size-5 shrink-0 text-error-ink" aria-hidden="true" />
+      <AlertCircle className="mt-0.5 size-5 shrink-0 text-danger" aria-hidden="true" />
       <div className="min-w-0 flex-1">
-        <p className="text-[0.9375rem] font-semibold text-error-ink">{error.title}</p>
-        <p className="mt-1 text-sm leading-relaxed text-ink">{error.message}</p>
+        <p className="font-semibold text-danger">{error.title}</p>
+        <p className="mt-1 leading-relaxed text-text">{error.message}</p>
         {children && <div className="mt-3 flex flex-wrap gap-2">{children}</div>}
       </div>
       {onDismiss && (
@@ -25,7 +25,7 @@ export function ErrorMessage({ error, onDismiss, children }: ErrorMessageProps) 
           type="button"
           onClick={onDismiss}
           aria-label="Dismiss error"
-          className="-m-1 rounded-control p-2 text-ink-muted hover:bg-white hover:text-ink"
+          className="-m-1 rounded-full p-2 text-text-muted transition-colors hover:bg-surface hover:text-text"
         >
           <X className="size-4" aria-hidden="true" />
         </button>

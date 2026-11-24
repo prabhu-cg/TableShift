@@ -1,63 +1,169 @@
 @import "tailwindcss";
 
-/* ---------- TableShift design tokens ---------- */
-@theme {
-  /* Colour */
-  --color-canvas: #ffffff;
-  --color-ink: #252525;
-  --color-ink-muted: #6b6b6b; /* #777 darkened slightly to pass AA (4.5:1) on white and surface */
-  --color-surface: #f7f7f5;
-  --color-line: #e8e8e5;
-  --color-line-strong: #cfcfca;
-  --color-accent: #c77935;
-  --color-accent-ink: #94561f; /* accessible accent for text on light backgrounds */
-  --color-accent-soft: #fbf1e8;
-  --color-success: #26845b;
-  --color-warning: #c48a32;
-  --color-error: #c64d4d;
-  --color-error-ink: #a63a3a;
-  --color-error-soft: #fbefef;
+/* ------------------------------------------------------------------
+   TableShift uses the shared Solvr "Butter" system (see Markly DESIGN.md):
+   white paper on a butter desk, one amber voice, flat with hairlines.
+   Components use these tokens only: no literal hex, bg-white or text-white.
+   ------------------------------------------------------------------ */
 
-  /* Typography */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --text-display: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
-  --text-display--line-height: 1.08;
-  --text-display--letter-spacing: -0.03em;
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --background: #fcfaf3; /* desk */
+  --surface: #ffffff; /* paper */
+  --surface-muted: #f8f4e4; /* sand: hover + secondary washes */
+  --border: #ece5cc;
+  --border-strong: #dccfa6;
+  --control: #8a7f6e; /* field outline */
+  --text: #353335;
+  --text-muted: #4d4a4d;
+  --text-subtle: #6b6b6b;
+  --primary: #e8b923; /* amber: fill only, never text */
+  --primary-hover: #d4a615;
+  --primary-foreground: #353335; /* text on amber is charcoal */
+  --primary-text: #826400; /* ochre: accent-coloured text */
+  --accent: #faf4df; /* butter tint: selected / soft badges / drag-over */
+  --danger: #b3261e;
+  --danger-surface: #fdeceb;
+  --warning: #8a5a00;
+  --success: #1a7f37;
+  --info: #0969da;
+}
 
-  /* Radius */
-  --radius-control: 0.625rem;
-  --radius-card: 1rem;
-  --radius-panel: 1.5rem;
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #181716;
+  --surface: #1c1b19;
+  --surface-muted: #262420;
+  --border: #2e2b26;
+  --border-strong: #433e35;
+  --control: #7d7569;
+  --text: #faf8f2;
+  --text-muted: #e6e2da;
+  --text-subtle: #a8a399;
+  --primary: #e8b923;
+  --primary-hover: #d4a615;
+  --primary-foreground: #353335;
+  --primary-text: #f0c94a;
+  --accent: #2a2410;
+  --danger: #ff6b5c;
+  --danger-surface: #3a1c17;
+  --warning: #d9a441;
+  --success: #3fb950;
+  --info: #6cb6ff;
+}
 
-  /* Shadow */
-  --shadow-card: 0 1px 2px rgb(37 37 37 / 0.04), 0 4px 16px rgb(37 37 37 / 0.04);
-  --shadow-raised: 0 2px 4px rgb(37 37 37 / 0.06), 0 12px 32px rgb(37 37 37 / 0.08);
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-control: var(--control);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-text: var(--primary-text);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-danger-surface: var(--danger-surface);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-info: var(--info);
 
-  /* Spacing scale (use via p-*, gap-* utilities; named steps for layout rhythm) */
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-newsreader), ui-serif, Georgia, serif;
+
   --spacing-gutter: clamp(1rem, 0.5rem + 2vw, 2rem);
   --spacing-section: clamp(2rem, 1rem + 4vw, 4rem);
+  --radius-panel: 1.25rem; /* 20px: workspace panel, feature cards, dialogs */
+  --shadow-overlay: 0 8px 32px rgb(0 0 0 / 0.16); /* only for what leaves the page */
 }
 
-html {
-  color-scheme: light;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    background: var(--background);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  h3,
+  h4 {
+    font-weight: 600;
+  }
+
+  /* Browser surfaces carry the palette too. */
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 45%, transparent);
+    color: inherit;
+  }
+  input,
+  select,
+  textarea {
+    caret-color: var(--primary-text);
+    accent-color: var(--primary);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+  :focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  kbd {
+    font-family: inherit;
+  }
 }
 
-body {
-  background: var(--color-canvas);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+/* Drawer: slides from the right over a scrim. */
+dialog.drawer {
+  margin: 0;
+  margin-left: auto;
+  max-height: none;
+  height: 100dvh;
 }
-
-:focus-visible {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 3px;
-  border-radius: 4px;
+dialog.drawer[open] {
+  animation: drawer-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+dialog.drawer::backdrop {
+  background: rgb(0 0 0 / 0.4);
+}
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
