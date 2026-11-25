@@ -22,12 +22,13 @@ export function PrivacyContent() {
   return (
     <>
       <p>
-        A screenshot is sent to the configured external AI provider only when you select Analyse
-        screenshot, so the model can read the table. Until then it stays in your browser tab.
+        A screenshot is sent to Groq, the external AI provider that runs the vision model, only when you
+        select Analyse screenshot, so the model can read the table. Until then it stays in your browser
+        tab.
       </p>
       <p>
         TableShift doesn&rsquo;t store your screenshot, doesn&rsquo;t write it to logs and doesn&rsquo;t use
-        it for training. The provider handles it under its own terms, so avoid screenshots that contain
+        it for training. Groq handles it under its own terms, so avoid screenshots that contain
         confidential or personal data.
       </p>
       <p>
