@@ -24,6 +24,9 @@ export function createOpenAICompatibleProvider({ apiKey, model, baseUrl }: Provi
           body: JSON.stringify({
             model,
             response_format: { type: "json_object" },
+            // Groq-hosted reasoning models: skip hidden thinking (it burns the token budget
+            // and can truncate the JSON). Extraction needs reading, not reasoning.
+            ...(endpoint.includes("api.groq.com") ? { reasoning_effort: "none", max_tokens: 4096 } : {}),
             messages: [
               { role: "system", content: jsonModeSystemPrompt() },
               {

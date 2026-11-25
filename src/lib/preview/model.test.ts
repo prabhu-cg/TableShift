@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { TableAnalysis } from "@/types/analysis";
 import { UNREADABLE } from "@/types/analysis";
 import { recommend } from "../recommendation/engine";
-import { analysis, col, contactsTable, financialTable, wideAdminTable } from "../test-fixtures";
-import { clampFullWidth, clampViewport, fitScale } from "./viewport";
+import { analysis, appointmentsTable, col, contactsTable, financialTable, wideAdminTable } from "../test-fixtures";
+import { clampFullWidth, clampViewport, deviceHeightFor, deviceName, fitScale } from "./viewport";
 import { actionLabel, buildPreviewModel, groupFields, statusTone } from "./model";
 
 const withRows = (a: TableAnalysis, rows: Record<string, string>[]): TableAnalysis => ({
@@ -73,6 +73,19 @@ describe("buildPreviewModel", () => {
     expect(m.titleColumn?.label).toBe("A");
   });
 
+  it("titles a record by its name rather than its ID, and still shows the ID as a field", () => {
+    const a = appointmentsTable();
+    const m = buildPreviewModel(a, recommend(a).recommendations[0]);
+    expect(m.titleColumn?.label).toBe("Patient Name");
+    expect(m.columns.map((c) => c.label)).toContain("Patient ID");
+    expect(m.columns.find((c) => c.label === "Mobile Number")?.identifierLike).toBe(true);
+  });
+
+  it("falls back to an identifier title when no other primary column exists", () => {
+    const a = analysis([col("Order ID", "text", "primary"), col("Total", "currency", "secondary")]);
+    expect(buildPreviewModel(a, null).titleColumn?.label).toBe("Order ID");
+  });
+
   it("is deterministic", () => {
     const a = withRows(financialTable(), [{ "c-Invoice": "INV-1" }]);
     const r = recommend(a).recommendations[0];
@@ -90,6 +103,8 @@ describe("helpers", () => {
 
   it("derives a restrained status tone only from known words", () => {
     expect(statusTone("Paid")).toBe("ok");
+    expect(statusTone("Accepted")).toBe("ok");
+    expect(statusTone("Rescheduled")).toBe("warn");
     expect(statusTone("Pending review")).toBe("warn");
     expect(statusTone("Overdue")).toBe("bad");
     expect(statusTone("Qualified lead")).toBe("neutral");
@@ -109,6 +124,24 @@ describe("viewport", () => {
     expect(clampViewport(Number.NaN)).toBe(390);
     expect(clampViewport(375.4)).toBe(375);
     expect(clampFullWidth(5000)).toBe(1024);
+  });
+  it("keeps a realistic device shape at every width", () => {
+    for (const w of [280, 320, 360, 375, 390, 430]) {
+      const ratio = deviceHeightFor(w) / w;
+      expect(ratio).toBeGreaterThan(1.7);
+      expect(ratio).toBeLessThan(1.8);
+    }
+    expect(deviceHeightFor(390)).toBe(683);
+    // wider screens ease toward tablet proportions but stay taller than wide
+    expect(deviceHeightFor(600)).toBeGreaterThan(600);
+    expect(deviceHeightFor(600) / 600).toBeLessThan(deviceHeightFor(430) / 430);
+    // taller as the width grows, so the device never gets squashed
+    expect(deviceHeightFor(430)).toBeGreaterThan(deviceHeightFor(390));
+  });
+  it("names the preset devices", () => {
+    expect(deviceName(390)).toBe("iPhone 14");
+    expect(deviceName(333)).toBe("Custom width");
+    expect(deviceName(500)).toBe("Large phone / small tablet");
   });
   it("only ever scales down", () => {
     expect(fitScale(1000, 400)).toBe(1);

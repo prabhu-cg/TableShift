@@ -4,6 +4,21 @@ const FINANCIAL_NAME = /\b(amount|price|cost|revenue|balance|total|fee|fees|spen
 
 const isNumeric = (c: TableColumn) => c.dataType === "number" || c.dataType === "currency";
 
+// Numbers that name or reach a record rather than measure something: IDs, phone numbers, postcodes.
+const IDENTIFIER_NAME = /\b(id|ids|ref|reference|phone|mobile|tel|telephone|fax|zip|postcode|postal|sku|pin)\b/i;
+const LONG_DIGITS = /^\d{9,}$/;
+
+/** True when a numeric-looking column is really an identifier (so it can't be compared like a quantity). */
+export function isIdentifierLike(c: TableColumn): boolean {
+  if (IDENTIFIER_NAME.test(c.name)) return true;
+  const samples = c.sampleValues.map((v) => v.trim()).filter(Boolean);
+  if (samples.some((v) => /^[+#]/.test(v))) return true;
+  return samples.length > 0 && samples.every((v) => LONG_DIGITS.test(v.replace(/[\s-]/g, "")));
+}
+
+/** A number or currency column that holds comparable quantities (not an ID or phone number). */
+export const isMeasure = (c: TableColumn) => isNumeric(c) && !isIdentifierLike(c);
+
 /** Columns that carry data (excludes action columns). */
 export const dataColumns = (columns: TableColumn[]) => columns.filter((c) => c.dataType !== "action");
 
@@ -21,7 +36,7 @@ export function deriveFeatures(
   actions: TableAction[],
 ): TableFeatures {
   const data = dataColumns(columns);
-  const numeric = data.filter(isNumeric);
+  const numeric = data.filter(isMeasure);
 
   const hasFinancialData =
     data.some((c) => c.dataType === "currency") ||

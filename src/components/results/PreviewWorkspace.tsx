@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { TableAnalysis } from "@/types/analysis";
 import type { Recommendation } from "@/types/recommendation";
-import { DEFAULT_VIEWPORT, DEVICE_HEIGHT } from "@/lib/preview/viewport";
+import { DEFAULT_VIEWPORT } from "@/lib/preview/viewport";
 import { MobileLayoutRenderer } from "@/components/preview/MobileLayoutRenderer";
 import { PreviewFrame } from "@/components/preview/PreviewFrame";
 import { PreviewToggles, ViewportPicker } from "@/components/preview/PreviewControls";
@@ -39,7 +39,6 @@ export function PreviewWorkspace({ analysis, recommendation, fillHeight, expande
           viewportWidth={width}
           full={full}
           framed={framed}
-          height={DEVICE_HEIGHT}
           fillHeight={fillHeight}
           label={`${recommendation.pattern} preview`}
         >

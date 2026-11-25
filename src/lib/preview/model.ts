@@ -2,7 +2,7 @@ import type { DataType, Importance, TableAction, TableAnalysis } from "@/types/a
 import { UNREADABLE } from "@/types/analysis";
 import type { Recommendation } from "@/types/recommendation";
 import { columnConfidenceLevel } from "../analysis-assessment";
-import { columnLabel, dataColumns } from "../features";
+import { columnLabel, dataColumns, isIdentifierLike } from "../features";
 
 /** A source column as the preview renderers see it. Always traceable via `id` / `sourceIndex`. */
 export interface PreviewColumn {
@@ -12,6 +12,8 @@ export interface PreviewColumn {
   importance: Importance;
   /** True when the column was not confidently detected; its values are flagged in the preview. */
   uncertain: boolean;
+  /** True for IDs, reference numbers and phone numbers: usable as a field, a poor record title. */
+  identifierLike: boolean;
   sourceIndex: number;
 }
 
@@ -95,6 +97,7 @@ export function buildPreviewModel(
     dataType: c.dataType,
     importance: c.importance,
     uncertain: columnConfidenceLevel(c) !== "detected",
+    identifierLike: isIdentifierLike(c),
     sourceIndex: analysis.columns.indexOf(c),
   }));
 
@@ -112,8 +115,13 @@ export function buildPreviewModel(
     secondary = columns.slice(FALLBACK_VISIBLE);
   }
 
+  // The record's title is the human-readable primary column (a name) rather than an ID, when there is one.
   const titleColumn =
-    visible.find((c) => c.importance === "primary") ?? visible[0] ?? columns[0] ?? null;
+    visible.find((c) => c.importance === "primary" && !c.identifierLike) ??
+    visible.find((c) => c.importance === "primary") ??
+    visible[0] ??
+    columns[0] ??
+    null;
   const statusColumn = visible.find((c) => c.dataType === "status" && c !== titleColumn) ?? null;
 
   const rows: PreviewRow[] = analysis.rows.map((r, i) => {
@@ -159,7 +167,7 @@ export function groupFields(columns: PreviewColumn[]): FieldGroup[] {
 
 export type StatusTone = "ok" | "warn" | "bad" | "neutral";
 
-const OK = /^(active|paid|complete(d)?|success(ful)?|approved|done|delivered|resolved|online|enabled|shipped|verified|available)$/i;
+const OK = /^(active|paid|complete(d)?|success(ful)?|approved|accepted|confirmed|booked|done|delivered|resolved|online|enabled|shipped|verified|available)$/i;
 const WARN = /(pending|processing|review|draft|partial|waiting|scheduled|in progress|on hold|trial)/i;
 const BAD = /(failed|overdue|error|cancel(l)?ed|rejected|declined|inactive|blocked|expired|refunded|late|disabled|suspended)/i;
 

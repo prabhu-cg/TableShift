@@ -71,7 +71,7 @@ export function CompareView({ analysis, recommendations, onOpen }: CompareViewPr
                 </div>
               </header>
 
-              <PreviewFrame viewportWidth={390} framed height={460} label={`${r.pattern} preview`}>
+              <PreviewFrame viewportWidth={390} framed label={`${r.pattern} preview`}>
                 {(vw) => <MobileLayoutRenderer analysis={analysis} recommendation={r} viewportWidth={vw} />}
               </PreviewFrame>
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Maximize2, Minimize2, RotateCcw } from "lucide-react";
-import { MAX_VIEWPORT, MIN_VIEWPORT, VIEWPORT_PRESETS, clampViewport } from "@/lib/preview/viewport";
+import { MAX_VIEWPORT, MIN_VIEWPORT, PRESET_DEVICES, VIEWPORT_PRESETS, clampViewport } from "@/lib/preview/viewport";
 
 function Switch({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
@@ -66,6 +66,8 @@ export function ViewportPicker({ width, onWidth, full }: ViewportPickerProps) {
                 key={p}
                 type="button"
                 aria-pressed={on}
+                aria-label={`${p} pixels, ${PRESET_DEVICES[p]}`}
+                title={`${PRESET_DEVICES[p]} (${p}px)`}
                 disabled={full}
                 onClick={() => {
                   setInvalid(false);
@@ -106,7 +108,7 @@ export function ViewportPicker({ width, onWidth, full }: ViewportPickerProps) {
         className={invalid ? "text-xs text-danger" : full ? "text-xs text-text-subtle" : "sr-only"}
       >
         {full
-          ? "Full width: the screen follows the available space."
+          ? "Full width: the screen fills this panel instead of a fixed phone width. Switch it off to pick a device."
           : invalid
             ? `Enter a width between ${MIN_VIEWPORT} and ${MAX_VIEWPORT} px. Adjusted to ${width}px.`
             : `Custom width can be ${MIN_VIEWPORT} to ${MAX_VIEWPORT} px.`}

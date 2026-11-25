@@ -1,6 +1,6 @@
 import type { TableAnalysis } from "@/types/analysis";
 import type { Criterion, PatternId } from "@/types/recommendation";
-import { dataColumns } from "../features";
+import { dataColumns, isMeasure } from "../features";
 import { COLUMNS_VISIBLE_WITHOUT_SCROLL } from "./constants";
 
 /** Facts every rule is evaluated against. All derived from the (possibly user-corrected) analysis. */
@@ -21,7 +21,7 @@ export function buildContext(analysis: TableAnalysis): RuleContext {
     n: cols.length,
     primary: cols.filter((c) => c.importance === "primary").length,
     secondaryOptional: cols.filter((c) => c.importance !== "primary").length,
-    numeric: cols.filter((c) => c.dataType === "number" || c.dataType === "currency").length,
+    numeric: cols.filter(isMeasure).length,
     rows: analysis.rows.length,
     hiddenCritical: cols.filter(
       (c, i) => c.importance === "primary" && i >= COLUMNS_VISIBLE_WITHOUT_SCROLL,

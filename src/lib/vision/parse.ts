@@ -22,7 +22,8 @@ function sanitiseDeep(value: unknown): unknown {
 
 /** Pull a JSON object out of model text (tolerates code fences or surrounding prose). */
 export function extractJson(text: string): unknown {
-  const trimmed = text.trim();
+  // Reasoning models may prepend <think>…</think>; drop it so stray braces in it can't confuse parsing.
+  const trimmed = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
   const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
   const candidate = fenced ? fenced[1] : trimmed;
   const start = candidate.indexOf("{");

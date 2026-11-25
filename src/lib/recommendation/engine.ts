@@ -51,6 +51,7 @@ function partitionFields(def: PatternDefinition, analysis: TableAnalysis) {
   const cols = dataColumns(analysis.columns).map((c) => ({
     label: columnLabel(c, analysis.columns.indexOf(c)),
     importance: c.importance,
+    isStatus: c.dataType === "status",
   }));
 
   if (def.id === "horizontal-scroll") {
@@ -61,7 +62,8 @@ function partitionFields(def: PatternDefinition, analysis: TableAnalysis) {
   const order = (imp: string) => (imp === "primary" ? 0 : imp === "secondary" ? 1 : 2);
   const ranked = cols
     .map((c, i) => ({ ...c, i }))
-    .sort((a, b) => order(a.importance) - order(b.importance) || a.i - b.i);
+    // Within the same importance, status badges come first: they are the most scannable field.
+    .sort((a, b) => order(a.importance) - order(b.importance) || Number(b.isStatus) - Number(a.isStatus) || a.i - b.i);
   const budget = Number.isFinite(def.visibleBudget) ? def.visibleBudget : ranked.length;
   const visibleSet = new Set(ranked.slice(0, budget).map((c) => c.i));
   return {

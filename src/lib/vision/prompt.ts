@@ -28,6 +28,12 @@ RULES
 - confidence values are between 0 and 1: how sure you are about the detection overall, and per column. Be conservative: blurry, cropped or tiny text must lower confidence.
 - observations: short factual statements about what you see (sorting arrows, filters, dense or lengthy columns, relationships between fields such as "Quantity and Unit price relate to Total"). Observations are shown to users as AI-inferred.
 - warnings: anything that limits reliability (cropped, low resolution, partially hidden columns).
+- Only the table itself counts. Ignore the controls around it (search boxes, filters, export or view buttons, tabs, pagination, record counts). Mention notable ones in observations, for example "search box", "status filter", "pagination: showing 1 to 10 of 12". Never turn them into columns, rows or actions.
+- A cell may hold an avatar, icon or badge next to text: transcribe only the text.
+- A column of per-row buttons or "..." menus is dataType "action". List it once in actions, with an empty label if it is only an icon.
+- IDs, reference numbers, phone numbers, postcodes and any value starting with + or # are "text", not "number". Use "number" or "currency" only for quantities and amounts.
+- Dates, times and time ranges are "date".
+- Status columns are usually "primary" or "secondary", rarely "optional".
 - Do not give design advice or recommendations. Another component handles that.
 - Respond ONLY with the structured result: no prose, no markdown.`;
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CRITERIA } from "@/types/recommendation";
-import { analysis, col, contactsTable, financialTable, wideAdminTable } from "../test-fixtures";
+import { analysis, appointmentsTable, col, contactsTable, financialTable, wideAdminTable } from "../test-fixtures";
 import { CRITERION_WEIGHTS } from "./constants";
 import { recommend } from "./engine";
 
@@ -120,5 +120,26 @@ describe("recommend", () => {
       expect(all.sort()).toEqual(["Email", "Name", "Plan", "Region", "Seats"]);
       expect(r.visibleFields).toContain("Name");
     }
+  });
+
+  it("keeps the status badge up front ahead of plain secondary text columns", () => {
+    const set = recommend(appointmentsTable());
+    for (const r of set.recommendations) {
+      if (r.patternId === "horizontal-scroll") continue;
+      expect(r.visibleFields).toContain("Status");
+    }
+  });
+
+  it("does not treat IDs and phone numbers typed as numbers as comparable measures", () => {
+    const a = analysis([
+      col("Patient ID", "number", "primary", ["1234"]),
+      col("Mobile Number", "number", "secondary", ["+447123456789"]),
+      col("Name", "text", "primary"),
+      col("Status", "status", "secondary"),
+    ]);
+    expect(a.features.hasComparableValues).toBe(false);
+    expect(a.features.requiresCrossColumnComparison).toBe(false);
+    const measures = analysis([col("Qty", "number", "primary", ["3"]), col("Price", "currency", "secondary", ["$4"])]);
+    expect(measures.features.hasComparableValues).toBe(true);
   });
 });

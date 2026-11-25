@@ -27,6 +27,11 @@ describe("parseVisionText", () => {
     expect(parseVisionText("```json\n" + JSON.stringify(valid) + "\n```").tableDetected).toBe(true);
   });
 
+  it("ignores reasoning text before the JSON", () => {
+    const text = "<think>The table has {three} columns, let me check…</think>\n" + JSON.stringify(valid);
+    expect(parseVisionText(text).columns).toHaveLength(3);
+  });
+
   it("rejects malformed or schema-violating output with invalid-response", () => {
     for (const bad of ["not json", "{}", JSON.stringify({ ...valid, confidence: 7 }), JSON.stringify({ ...valid, contentKind: "pwned" })]) {
       try {

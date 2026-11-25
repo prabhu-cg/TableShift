@@ -69,3 +69,18 @@ export const wideAdminTable = () =>
     ],
     { rows: 15, actions: ["Open", "Close"] },
   );
+
+/** Appointments list: ID, name, type, time, phone, status badge, row menu. */
+export const appointmentsTable = () =>
+  analysis(
+    [
+      col("Patient ID", "text", "primary"),
+      col("Patient Name", "text", "primary"),
+      col("Type", "text", "secondary", ["Clinic Visit"]),
+      col("Time", "date", "secondary", ["08:00 AM - 08:30 AM"]),
+      col("Mobile Number", "number", "secondary", ["+447123456789"]),
+      col("Status", "status", "secondary", ["Accepted"]),
+      col("Actions", "action", "optional"),
+    ],
+    { rows: 14, actions: [""] },
+  );
