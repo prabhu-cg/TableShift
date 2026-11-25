@@ -26,6 +26,9 @@ export const PATTERN_ORDER: PatternId[] = [
   "expandable-rows",
   "list-detail",
   "horizontal-scroll",
+  "column-picker",
+  "grouped-sections",
+  "tabbed-groups",
 ];
 
 /** Columns that fit on a ~375px screen before horizontal scrolling. */

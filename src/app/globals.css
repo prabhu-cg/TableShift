@@ -273,10 +273,25 @@ dialog.drawer::backdrop {
 .pv-table tbody th { font-size: 14px; color: var(--pv-text); }
 .pv-group-row th { position: static; padding-bottom: 4px; border-bottom: 0; }
 .pv-table thead th.pv-group { text-align: center; color: var(--pv-text); border-bottom: 2px solid var(--pv-border); }
-.pv-details { display: grid; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--pv-border); }
-.pv-details-heading { margin: 0 0 4px; font-size: 12px; font-weight: 650; color: var(--pv-muted); }
-.pv-details-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; font-size: 13px; }
-.pv-details-list li { padding: 3px 0; border-bottom: 1px solid var(--pv-border); overflow-wrap: anywhere; }
+.pv-picker { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.pv-picker-btn { justify-content: space-between; gap: 10px; width: 100%; }
+.pv-picker-panel { margin: 0; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--pv-surface); border: 1px solid var(--pv-border); border-radius: 10px; }
+.pv-picker-panel legend { padding: 0 4px; font-size: 12px; font-weight: 650; color: var(--pv-muted); }
+.pv-picker-list { display: flex; flex-direction: column; }
+.pv-picker-opt { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; cursor: pointer; }
+.pv-picker-opt input { width: 20px; height: 20px; accent-color: #1c2024; flex: none; }
+.pv-gs-note { margin: 0 0 8px; font-size: 12px; }
+.pv-gs-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--pv-border); }
+.pv-gs-list[hidden] { display: none; }
+.pv-gs-row { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-bottom: 1px solid var(--pv-border); }
+.pv-gs-row:last-child { border-bottom: 0; }
+.pv-tabs { display: flex; gap: 4px; margin-bottom: 10px; overflow-x: auto; border-bottom: 1px solid var(--pv-border); scrollbar-width: none; }
+.pv-tab { flex: none; min-height: 44px; padding: 0 14px; background: transparent; border: 0; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 600; color: var(--pv-muted); white-space: nowrap; }
+.pv-tab[aria-selected="true"] { color: var(--pv-text); border-bottom-color: #1c2024; }
+.pv-rowdetails { display: grid; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--pv-border); }
+.pv-rowdetails-heading { margin: 0 0 4px; font-size: 12px; font-weight: 650; color: var(--pv-muted); }
+.pv-rowdetails-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; font-size: 13px; }
+.pv-rowdetails-list li { padding: 3px 0; border-bottom: 1px solid var(--pv-border); overflow-wrap: anywhere; }
 
 /* Prioritised list */
 .pv-switch { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600; cursor: pointer; }

@@ -3,6 +3,8 @@ import { CRITERIA } from "@/types/recommendation";
 import { analysis, appointmentsTable, col, contactsTable, financialTable, wideAdminTable } from "../test-fixtures";
 import { CRITERION_WEIGHTS } from "./constants";
 import { recommend } from "./engine";
+import type { TableAnalysis } from "@/types/analysis";
+import { deriveFeatures } from "../features";
 
 const ids = (a: ReturnType<typeof analysis>) => recommend(a).recommendations.map((r) => r.patternId);
 
@@ -12,10 +14,10 @@ describe("recommend", () => {
     expect(recommend(a)).toEqual(recommend(structuredClone(a)));
   });
 
-  it("returns three ranked recommendations out of five evaluated patterns", () => {
+  it("returns three ranked recommendations out of eight evaluated patterns", () => {
     const set = recommend(wideAdminTable());
     expect(set.recommendations.map((r) => r.rank)).toEqual([1, 2, 3]);
-    expect(set.evaluated).toHaveLength(5);
+    expect(set.evaluated).toHaveLength(8);
     expect(set.evaluated.filter((e) => e.selected)).toHaveLength(3);
     const scores = set.recommendations.map((r) => r.score);
     expect([...scores].sort((a, b) => b - a)).toEqual(scores);
@@ -143,13 +145,56 @@ describe("recommend", () => {
     expect(measures.features.hasComparableValues).toBe(true);
   });
 
-  it("returns the remaining two patterns as ranked lower-fit options", () => {
+  it("returns the remaining five patterns as ranked lower-fit options", () => {
     const set = recommend(appointmentsTable());
     expect(set.recommendations).toHaveLength(3);
-    expect(set.others).toHaveLength(2);
-    expect(set.others.map((o) => o.rank)).toEqual([4, 5]);
+    expect(set.others).toHaveLength(5);
+    expect(set.others.map((o) => o.rank)).toEqual([4, 5, 6, 7, 8]);
     const ids = [...set.recommendations, ...set.others].map((r) => r.patternId);
-    expect(new Set(ids).size).toBe(5);
+    expect(new Set(ids).size).toBe(8);
     expect(set.others[0].score).toBeGreaterThanOrEqual(set.others[1].score);
+  });
+
+  describe("new patterns", () => {
+    const find = (a: TableAnalysis, id: string) => {
+      const set = recommend(a);
+      return [...set.recommendations, ...set.others].find((r) => r.patternId === id)!;
+    };
+    const withValues = (a: TableAnalysis, key: string, values: string[]): TableAnalysis => {
+      const c = a.columns.find((x) => x.name === key)!;
+      return { ...a, rows: a.rows.map((r, i) => ({ ...r, values: { ...r.values, [c.id]: values[i % values.length] } })) };
+    };
+
+    it("caps grouped sections unless a column splits the rows into a few sections", () => {
+      const plain = find(appointmentsTable(), "grouped-sections");
+      expect(plain.score).toBeLessThanOrEqual(45);
+      expect(plain.ruleNotes.some((n) => n.kind === "constraint")).toBe(true);
+
+      const withStatus = withValues(appointmentsTable(), "Status", ["Accepted", "Pending", "Cancelled"]);
+      const sectioned = find(withStatus, "grouped-sections");
+      expect(sectioned.ruleNotes.some((n) => n.kind === "constraint")).toBe(false);
+      expect(sectioned.score).toBeGreaterThan(plain.score);
+    });
+
+    it("caps tabbed groups unless the table has two or more column groups", () => {
+      expect(find(wideAdminTable(), "tabbed-groups").score).toBeLessThanOrEqual(40);
+
+      const base = wideAdminTable();
+      const columns = base.columns.map((c, i) => ({ ...c, group: i < 3 ? "" : i < 6 ? "Contact" : "Billing" }));
+      const grouped: TableAnalysis = { ...base, columns, features: deriveFeatures(columns, base.rows, base.actions) };
+      const tabs = find(grouped, "tabbed-groups");
+      expect(tabs.ruleNotes.some((n) => n.kind === "constraint")).toBe(false);
+      expect(tabs.score).toBeGreaterThan(find(wideAdminTable(), "tabbed-groups").score);
+    });
+
+    it("caps the column picker for tables with four or fewer columns", () => {
+      const small = analysis([col("A", "text", "primary"), col("B", "text", "secondary"), col("C", "number", "secondary")]);
+      expect(find(small, "column-picker").score).toBeLessThanOrEqual(55);
+    });
+
+    it("keeps tab and section recommendations deterministic", () => {
+      const a = withValues(appointmentsTable(), "Status", ["Accepted", "Pending", "Cancelled"]);
+      expect(recommend(a)).toEqual(recommend(a));
+    });
   });
 });

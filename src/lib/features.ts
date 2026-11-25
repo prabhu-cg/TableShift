@@ -1,4 +1,5 @@
 import type { TableAction, TableColumn, TableFeatures, TableRow } from "@/types/analysis";
+import { UNREADABLE } from "@/types/analysis";
 
 const FINANCIAL_NAME = /\b(amount|price|cost|revenue|balance|total|fee|fees|spend|budget|paid|due|invoice|payment|salary|tax|profit|margin|mrr|arr)\b/i;
 
@@ -70,4 +71,57 @@ export function deriveFeatures(
     hasColumnGroups: columns.some((c) => !!c.group?.trim()),
     hasRowDetails: rows.some((r) => !!r.details?.length),
   };
+}
+
+/** Label for columns that sit outside every named group once a table has groups. */
+export const UNGROUPED_LABEL = "General";
+
+export interface ColumnGroupInfo {
+  /** Group header text, or UNGROUPED_LABEL for columns without one. */
+  name: string;
+  columnIds: string[];
+}
+
+/**
+ * Data columns collected under their spanning headers, in first-seen order. Ungrouped columns
+ * form one "General" group. Returns [] when the table has no column groups.
+ */
+export function columnGroups(columns: TableColumn[]): ColumnGroupInfo[] {
+  const data = dataColumns(columns);
+  if (!data.some((c) => c.group?.trim())) return [];
+  const groups: ColumnGroupInfo[] = [];
+  for (const c of data) {
+    const name = c.group?.trim() || UNGROUPED_LABEL;
+    let g = groups.find((x) => x.name === name);
+    if (!g) groups.push((g = { name, columnIds: [] }));
+    g.columnIds.push(c.id);
+  }
+  return groups;
+}
+
+const norm = (v: string) => v.trim().toLowerCase();
+
+/**
+ * The column best suited to split rows into collapsible sections: a status or short-text column
+ * with a few repeated values (not an identifier). Null when no column groups the rows usefully.
+ */
+export function findSectionColumn(columns: TableColumn[], rows: TableRow[]): TableColumn | null {
+  if (rows.length < 6) return null;
+  let best: { column: TableColumn; score: number } | null = null;
+  for (const c of dataColumns(columns)) {
+    if (c.dataType !== "status" && c.dataType !== "text") continue;
+    if (isIdentifierLike(c)) continue;
+    const values = rows
+      .map((r) => r.values[c.id])
+      .filter((v): v is string => !!v && v !== UNREADABLE)
+      .map(norm);
+    if (values.length < rows.length * 0.6) continue;
+    const distinct = new Set(values).size;
+    if (distinct < 2 || distinct > Math.min(6, Math.floor(values.length / 2))) continue;
+    if (values.some((v) => v.length > 40)) continue;
+    // Prefer status columns, then fewer, more even sections.
+    const score = (c.dataType === "status" ? 10 : 0) - distinct;
+    if (!best || score > best.score) best = { column: c, score };
+  }
+  return best?.column ?? null;
 }

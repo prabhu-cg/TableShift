@@ -3,7 +3,10 @@ export type PatternId =
   | "expandable-rows"
   | "horizontal-scroll"
   | "prioritised-columns"
-  | "list-detail";
+  | "list-detail"
+  | "column-picker"
+  | "grouped-sections"
+  | "tabbed-groups";
 
 export const CRITERIA = [
   "informationPreservation",

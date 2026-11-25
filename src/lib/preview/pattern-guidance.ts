@@ -133,4 +133,73 @@ export const PATTERN_GUIDANCE: Record<PatternId, PatternGuidance> = {
       challenges: ["Highest effort: routing, state and back behaviour.", "Comparing records means moving between detail views."],
     },
   },
+  "column-picker": {
+    summary: "A compact table where users choose which columns to show, starting from the most important.",
+    secondaryLocation: "Behind a Columns button that lists every column as a checkbox.",
+    interaction: {
+      scrolling: "Vertical page scroll; sideways scroll only if the chosen columns are too wide for the screen.",
+      expansion: "A Columns panel opens in place above the table and closes when the user is done.",
+      navigation: "None: the picker is a panel, not a new screen.",
+      selection: "Checkboxes switch columns on or off. The first column (the record title) always stays.",
+    },
+    accessibility: [
+      COMMON_A11Y.readability,
+      COMMON_A11Y.touch,
+      COMMON_A11Y.contrast,
+      "The picker button reports aria-expanded and names how many columns are shown.",
+      "Keyboard: Tab through the checkboxes; Space toggles a column; Escape or the Done button closes the panel.",
+      "Screen readers: put the checkboxes in a labelled group and announce the new column count after a change.",
+    ],
+    implementation: {
+      responsive: "Show four columns by default on a phone and let users add more; remember their choice per table.",
+      css: ["Table layout with a pinned first column.", "A panel that pushes the table down instead of overlapping it."],
+      challenges: ["Choosing a sensible default column set.", "Saving the user's choice between visits."],
+    },
+  },
+  "grouped-sections": {
+    summary: "Records are grouped under collapsible headers, one per value of a column such as status.",
+    secondaryLocation: "In the expanded area under each record, or in the section the record belongs to.",
+    interaction: {
+      scrolling: "Vertical page scroll only.",
+      expansion: "Tap a section header to open or close the whole group; the first section starts open.",
+      navigation: "None: sections open in place.",
+      selection: "Records are not selectable here. Add a tap target if your product opens a record.",
+    },
+    accessibility: [
+      COMMON_A11Y.readability,
+      COMMON_A11Y.touch,
+      COMMON_A11Y.contrast,
+      "Each section header is a heading containing a button with aria-expanded and aria-controls.",
+      "Keyboard: Tab to a header, Enter or Space to open or close it.",
+      "Screen readers: the header announces the group name, the record count and its state.",
+    ],
+    implementation: {
+      responsive: "Single column of sections; each record uses the same compact row as the list pattern.",
+      css: ["Native details/summary or a button-controlled region.", "Sticky section headers for long groups."],
+      challenges: ["Choosing which column to group by.", "Keeping section state when data refreshes."],
+    },
+  },
+  "tabbed-groups": {
+    summary: "The table's column groups become tabs; every record keeps its title and shows one group at a time.",
+    secondaryLocation: "On the other tabs, one tab per column group.",
+    interaction: {
+      scrolling: "Vertical page scroll; the tab bar can scroll sideways if there are many groups.",
+      expansion: "None: switching tabs swaps the columns for every record at once.",
+      navigation: "Tabs change the view in place without leaving the page.",
+      selection: "The selected tab stays while the user scrolls and is remembered when they return.",
+    },
+    accessibility: [
+      COMMON_A11Y.readability,
+      COMMON_A11Y.touch,
+      COMMON_A11Y.contrast,
+      "Use role=tablist, tab and tabpanel, with aria-selected and aria-controls set correctly.",
+      "Keyboard: Left and Right arrows move between tabs; Tab moves into the panel.",
+      "Screen readers: announce each tab's name and position, such as Performance, tab 2 of 3.",
+    ],
+    implementation: {
+      responsive: "A scrollable tab bar on phones; show full tab names, not icons.",
+      css: ["Horizontal tab bar with scroll snapping.", "Fixed record title column or heading above each group of values."],
+      challenges: ["Columns that belong to no group need a home (a General tab).", "Very long group names need to be shortened."],
+    },
+  },
 };

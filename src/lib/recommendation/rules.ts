@@ -1,6 +1,6 @@
 import type { TableAnalysis } from "@/types/analysis";
 import type { Criterion, PatternId } from "@/types/recommendation";
-import { dataColumns, isMeasure } from "../features";
+import { columnGroups, dataColumns, findSectionColumn, isMeasure } from "../features";
 import { COLUMNS_VISIBLE_WITHOUT_SCROLL } from "./constants";
 
 /** Facts every rule is evaluated against. All derived from the (possibly user-corrected) analysis. */
@@ -12,6 +12,10 @@ export interface RuleContext {
   rows: number;
   /** Primary columns positioned beyond the first screenful of columns. */
   hiddenCritical: number;
+  /** Number of named column groups (0 when the table has none). */
+  groupCount: number;
+  /** True when a column splits the rows into a few sections. */
+  sectionable: boolean;
   f: TableAnalysis["features"];
 }
 
@@ -26,6 +30,8 @@ export function buildContext(analysis: TableAnalysis): RuleContext {
     hiddenCritical: cols.filter(
       (c, i) => c.importance === "primary" && i >= COLUMNS_VISIBLE_WITHOUT_SCROLL,
     ).length,
+    groupCount: columnGroups(analysis.columns).length,
+    sectionable: findSectionColumn(analysis.columns, analysis.rows) !== null,
     f: analysis.features,
   };
 }
@@ -128,6 +134,25 @@ export const ADJUSTMENT_RULES: AdjustmentRule[] = [
   adj("actions-ld", "list-detail", "interactionSimplicity", -5, (c) => c.f.hasActions, "Actions sit one navigation step away in the detail view."),
   adj("status-card", "card", "mobileReadability", +5, (c) => c.f.hasStatusIndicators, "Status badges stand out clearly on a card."),
   adj("status-pri", "prioritised-columns", "mobileReadability", +5, (c) => c.f.hasStatusIndicators, "Compact status indicators stay scannable in a narrow table."),
+
+  // Column picker: suits wide tables whose users need different columns for different tasks.
+  adj("wide-picker-read", "column-picker", "mobileReadability", +10, (c) => c.n >= 7, "Many columns are available, and the user only shows the ones they need."),
+  adj("wide-picker-rel", "column-picker", "dataRelationships", +5, (c) => c.n >= 7 && compares(c), "The user can pick the exact numeric columns to compare side by side."),
+  adj("few-picker-int", "column-picker", "interactionSimplicity", -20, fewCols, "A picker is unnecessary overhead for so few columns."),
+  adj("secondary-picker", "column-picker", "informationPreservation", +5, manySecondary, "Secondary columns stay one tap away instead of hidden for good."),
+  adj("groups-picker", "column-picker", "informationPreservation", +5, (c) => c.groupCount >= 2, "Columns can be switched on a group at a time."),
+
+  // Grouped sections: rows organised under a column's few repeated values.
+  adj("sections-rel", "grouped-sections", "dataRelationships", +10, (c) => c.sectionable, "A column with a few repeated values splits the rows into natural sections."),
+  adj("sections-rows", "grouped-sections", "mobileReadability", +10, (c) => c.sectionable && c.rows >= 12, "Collapsible sections keep a long list manageable."),
+  adj("sections-status", "grouped-sections", "interactionSimplicity", +5, (c) => c.sectionable && c.f.hasStatusIndicators, "Grouping by status lets users jump to the records they care about."),
+  adj("sections-compare", "grouped-sections", "dataRelationships", -10, compares, "Comparing numeric values across sections means scrolling between them."),
+
+  // Tabbed column groups: the desktop table's own column groups become tabs.
+  adj("groups-tabs-rel", "tabbed-groups", "dataRelationships", +10, (c) => c.groupCount >= 2, "The table's own column groups become tabs, so related columns stay together."),
+  adj("groups-tabs-read", "tabbed-groups", "mobileReadability", +10, (c) => c.groupCount >= 2 && c.n >= 8, "Each tab shows only a few columns, however wide the table is."),
+  adj("groups-tabs-pres", "tabbed-groups", "informationPreservation", +5, (c) => c.groupCount >= 3, "Three or more groups spread the columns evenly across tabs."),
+  adj("compare-tabs", "tabbed-groups", "dataRelationships", -10, (c) => compares(c) && c.groupCount < 2, "Comparing columns that sit on different tabs is awkward."),
 ];
 
 export const CONSTRAINT_RULES: ConstraintRule[] = [
@@ -172,5 +197,26 @@ export const CONSTRAINT_RULES: ConstraintRule[] = [
     cap: 70,
     when: (c) => c.n <= 3,
     text: "Hard constraint: a detail screen adds navigation for very little content, so this pattern is capped at 70.",
+  },
+  {
+    id: "cap-picker-small",
+    pattern: "column-picker",
+    cap: 55,
+    when: (c) => c.n <= 4,
+    text: "Hard constraint: a column picker adds little for four or fewer columns, so this pattern is capped at 55.",
+  },
+  {
+    id: "cap-sections-none",
+    pattern: "grouped-sections",
+    cap: 45,
+    when: (c) => !c.sectionable,
+    text: "Hard constraint: no column has a few repeated values to group rows by, so this pattern is capped at 45.",
+  },
+  {
+    id: "cap-tabs-none",
+    pattern: "tabbed-groups",
+    cap: 40,
+    when: (c) => c.groupCount < 2,
+    text: "Hard constraint: the table has no column groups to turn into tabs, so this pattern is capped at 40.",
   },
 ];

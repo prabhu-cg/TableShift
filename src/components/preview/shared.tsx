@@ -170,11 +170,11 @@ export function PreviewShell({
 export function RowDetails({ row }: { row: PreviewRow }) {
   if (row.details.length === 0) return null;
   return (
-    <div className="pv-details">
+    <div className="pv-rowdetails">
       {row.details.map((d, i) => (
-        <section key={i} className="pv-details-block">
-          {d.heading && <h4 className="pv-details-heading">{d.heading}</h4>}
-          <ul className="pv-details-list">
+        <section key={i} className="pv-rowdetails-block">
+          {d.heading && <h4 className="pv-rowdetails-heading">{d.heading}</h4>}
+          <ul className="pv-rowdetails-list">
             {d.items.map((item, j) => (
               <li key={j}>{item}</li>
             ))}
