@@ -6,7 +6,9 @@ export type PatternId =
   | "list-detail"
   | "column-picker"
   | "grouped-sections"
-  | "tabbed-groups";
+  | "tabbed-groups"
+  | "summary-sheet"
+  | "record-pager";
 
 export const CRITERIA = [
   "informationPreservation",

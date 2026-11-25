@@ -6,7 +6,9 @@ import { GroupedSectionsPreview } from "./GroupedSectionsPreview";
 import { HorizontalTablePreview } from "./HorizontalTablePreview";
 import { ListDetailPreview } from "./ListDetailPreview";
 import { PrioritisedListPreview } from "./PrioritisedListPreview";
+import { RecordPagerPreview } from "./RecordPagerPreview";
 import { EmptyPreview } from "./shared";
+import { SummarySheetPreview } from "./SummarySheetPreview";
 import { TabbedGroupsPreview } from "./TabbedGroupsPreview";
 import type { MobileLayoutRendererProps } from "./types";
 
@@ -19,6 +21,8 @@ const RENDERERS: Record<PatternId, (p: MobileLayoutRendererProps) => React.React
   "column-picker": (p) => <ColumnPickerPreview {...p} />,
   "grouped-sections": (p) => <GroupedSectionsPreview {...p} />,
   "tabbed-groups": (p) => <TabbedGroupsPreview {...p} />,
+  "summary-sheet": (p) => <SummarySheetPreview {...p} />,
+  "record-pager": (p) => <RecordPagerPreview {...p} />,
 };
 
 /** Picks the renderer for the recommendation's pattern. Renders from data only; never calls the AI. */

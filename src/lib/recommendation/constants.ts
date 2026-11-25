@@ -29,6 +29,8 @@ export const PATTERN_ORDER: PatternId[] = [
   "column-picker",
   "grouped-sections",
   "tabbed-groups",
+  "summary-sheet",
+  "record-pager",
 ];
 
 /** Columns that fit on a ~375px screen before horizontal scrolling. */

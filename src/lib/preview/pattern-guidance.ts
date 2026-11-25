@@ -202,4 +202,50 @@ export const PATTERN_GUIDANCE: Record<PatternId, PatternGuidance> = {
       challenges: ["Columns that belong to no group need a home (a General tab).", "Very long group names need to be shortened."],
     },
   },
+  "summary-sheet": {
+    summary: "A light list of summary rows. Tapping a row opens the full record in a bottom sheet.",
+    secondaryLocation: "In the bottom sheet that opens from each row.",
+    interaction: {
+      scrolling: "Vertical scroll for the list; the sheet scrolls separately if the record is long.",
+      expansion: "Tap a row to open its sheet. The list behind it is dimmed.",
+      navigation: "None: the sheet sits over the list and closes back to it.",
+      selection: "Tapping a row selects it for the sheet; closing the sheet clears it.",
+    },
+    accessibility: [
+      COMMON_A11Y.readability,
+      COMMON_A11Y.touch,
+      COMMON_A11Y.contrast,
+      "The sheet is a modal dialog with a title; focus moves to its Close button on open.",
+      "Keyboard: Escape closes the sheet and focus returns to the row that opened it.",
+      "Screen readers: hide the list while the sheet is open so only the sheet is announced.",
+    ],
+    implementation: {
+      responsive: "Sheet is full width and up to about 80% of the screen height on phones.",
+      css: ["Fixed bottom panel with a dimmed backdrop.", "Lock background scrolling while the sheet is open."],
+      challenges: ["Focus trapping and restoring focus on close.", "Sheet height for very long records."],
+    },
+  },
+  "record-pager": {
+    summary: "One record fills the screen at a time, with Previous and Next buttons to move between them.",
+    secondaryLocation: "Nowhere: every field of the record is shown on the same screen.",
+    interaction: {
+      scrolling: "Vertical scroll within a record; moving between records uses buttons.",
+      expansion: "None needed: all fields are visible.",
+      navigation: "Previous and Next buttons, plus a jump menu to pick any record.",
+      selection: "The record on screen is the selected one.",
+    },
+    accessibility: [
+      COMMON_A11Y.readability,
+      COMMON_A11Y.touch,
+      COMMON_A11Y.contrast,
+      "Previous and Next are real buttons and are disabled at the first and last record.",
+      "Keyboard: Tab to the buttons; Enter or Space moves to the next record.",
+      "Screen readers: announce the record's title and position (such as Record 3 of 12) after each change.",
+    ],
+    implementation: {
+      responsive: "Fields stack in one column; two-up once the width allows.",
+      css: ["Sticky pager bar at the top of the record.", "Label/value pairs in a definition list."],
+      challenges: ["Slow for long lists, so pair it with search or filters.", "Keeping position when the data refreshes."],
+    },
+  },
 };

@@ -153,6 +153,23 @@ export const ADJUSTMENT_RULES: AdjustmentRule[] = [
   adj("groups-tabs-read", "tabbed-groups", "mobileReadability", +10, (c) => c.groupCount >= 2 && c.n >= 8, "Each tab shows only a few columns, however wide the table is."),
   adj("groups-tabs-pres", "tabbed-groups", "informationPreservation", +5, (c) => c.groupCount >= 3, "Three or more groups spread the columns evenly across tabs."),
   adj("compare-tabs", "tabbed-groups", "dataRelationships", -10, (c) => compares(c) && c.groupCount < 2, "Comparing columns that sit on different tabs is awkward."),
+
+  // Summary + bottom sheet: a light list whose full records open in a sheet.
+  adj("wide-sheet-pres", "summary-sheet", "informationPreservation", +5, (c) => c.n >= 7, "Many fields all fit in the sheet while the list stays light."),
+  adj("details-sheet-pres", "summary-sheet", "informationPreservation", +10, (c) => c.f.hasRowDetails, "Nested or expanded content has a roomy place to live in the sheet."),
+  adj("actions-sheet", "summary-sheet", "interactionSimplicity", +5, (c) => c.f.hasActions, "Row actions sit in the sheet instead of crowding the list."),
+  adj("rows-sheet", "summary-sheet", "mobileReadability", +5, (c) => c.rows >= 12, "A light summary row scales well to many records."),
+  adj("text-sheet", "summary-sheet", "mobileReadability", +5, (c) => c.f.hasLongText, "Long text gets the sheet's full width."),
+  adj("few-sheet-int", "summary-sheet", "interactionSimplicity", -15, fewCols, "A sheet adds a tap for very little extra content."),
+  adj("compare-sheet", "summary-sheet", "dataRelationships", -15, compares, "Comparing numeric values means opening one sheet after another."),
+
+  // One record at a time: every field of a single record, paged.
+  adj("wide-pager-read", "record-pager", "mobileReadability", +10, (c) => c.n >= 10, "A very wide table reads best one record at a time."),
+  adj("wide-pager-pres", "record-pager", "informationPreservation", +5, (c) => c.n >= 10, "All columns stay available without scrolling sideways."),
+  adj("short-pager-int", "record-pager", "interactionSimplicity", +10, (c) => c.rows <= 5, "With few records, paging through them is quick."),
+  adj("rows-pager-read", "record-pager", "mobileReadability", -15, (c) => c.rows >= 12, "Paging through many records is slow."),
+  adj("rows-pager-int", "record-pager", "interactionSimplicity", -15, (c) => c.rows >= 12, "Many records mean many Next taps."),
+  adj("compare-pager", "record-pager", "dataRelationships", -20, compares, "Comparing records means paging back and forth."),
 ];
 
 export const CONSTRAINT_RULES: ConstraintRule[] = [
@@ -218,5 +235,26 @@ export const CONSTRAINT_RULES: ConstraintRule[] = [
     cap: 40,
     when: (c) => c.groupCount < 2,
     text: "Hard constraint: the table has no column groups to turn into tabs, so this pattern is capped at 40.",
+  },
+  {
+    id: "cap-sheet-small",
+    pattern: "summary-sheet",
+    cap: 55,
+    when: (c) => c.n <= 3,
+    text: "Hard constraint: a sheet adds a step for three or fewer columns, so this pattern is capped at 55.",
+  },
+  {
+    id: "cap-pager-long",
+    pattern: "record-pager",
+    cap: 50,
+    when: (c) => c.rows >= 20,
+    text: "Hard constraint: paging through twenty or more records is impractical, so this pattern is capped at 50.",
+  },
+  {
+    id: "cap-pager-small",
+    pattern: "record-pager",
+    cap: 50,
+    when: (c) => c.n <= 4,
+    text: "Hard constraint: one record at a time adds little for four or fewer columns, so this pattern is capped at 50.",
   },
 ];

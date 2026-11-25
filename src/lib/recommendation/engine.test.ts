@@ -14,10 +14,10 @@ describe("recommend", () => {
     expect(recommend(a)).toEqual(recommend(structuredClone(a)));
   });
 
-  it("returns three ranked recommendations out of eight evaluated patterns", () => {
+  it("returns three ranked recommendations out of ten evaluated patterns", () => {
     const set = recommend(wideAdminTable());
     expect(set.recommendations.map((r) => r.rank)).toEqual([1, 2, 3]);
-    expect(set.evaluated).toHaveLength(8);
+    expect(set.evaluated).toHaveLength(10);
     expect(set.evaluated.filter((e) => e.selected)).toHaveLength(3);
     const scores = set.recommendations.map((r) => r.score);
     expect([...scores].sort((a, b) => b - a)).toEqual(scores);
@@ -145,13 +145,13 @@ describe("recommend", () => {
     expect(measures.features.hasComparableValues).toBe(true);
   });
 
-  it("returns the remaining five patterns as ranked lower-fit options", () => {
+  it("returns the remaining seven patterns as ranked lower-fit options", () => {
     const set = recommend(appointmentsTable());
     expect(set.recommendations).toHaveLength(3);
-    expect(set.others).toHaveLength(5);
-    expect(set.others.map((o) => o.rank)).toEqual([4, 5, 6, 7, 8]);
+    expect(set.others).toHaveLength(7);
+    expect(set.others.map((o) => o.rank)).toEqual([4, 5, 6, 7, 8, 9, 10]);
     const ids = [...set.recommendations, ...set.others].map((r) => r.patternId);
-    expect(new Set(ids).size).toBe(8);
+    expect(new Set(ids).size).toBe(10);
     expect(set.others[0].score).toBeGreaterThanOrEqual(set.others[1].score);
   });
 
@@ -190,6 +190,25 @@ describe("recommend", () => {
     it("caps the column picker for tables with four or fewer columns", () => {
       const small = analysis([col("A", "text", "primary"), col("B", "text", "secondary"), col("C", "number", "secondary")]);
       expect(find(small, "column-picker").score).toBeLessThanOrEqual(55);
+    });
+
+    it("caps the bottom sheet for three or fewer columns", () => {
+      const tiny = analysis([col("A", "text", "primary"), col("B", "text", "secondary"), col("C", "text", "secondary")]);
+      expect(find(tiny, "summary-sheet").score).toBeLessThanOrEqual(55);
+    });
+
+    it("favours the bottom sheet when rows carry expanded details", () => {
+      const base = wideAdminTable();
+      const rows = base.rows.map((r) => ({ ...r, details: [{ heading: "Documents", items: ["Factsheet"] }] }));
+      const withDetails: TableAnalysis = { ...base, rows, features: deriveFeatures(base.columns, rows, base.actions) };
+      expect(find(withDetails, "summary-sheet").score).toBeGreaterThan(find(base, "summary-sheet").score);
+    });
+
+    it("caps one-record-at-a-time for long lists and favours it for short wide ones", () => {
+      expect(find(analysis(wideAdminTable().columns, { rows: 25 }), "record-pager").score).toBeLessThanOrEqual(50);
+      const short = find(analysis(wideAdminTable().columns, { rows: 4 }), "record-pager");
+      const long = find(analysis(wideAdminTable().columns, { rows: 14 }), "record-pager");
+      expect(short.score).toBeGreaterThan(long.score);
     });
 
     it("keeps tab and section recommendations deterministic", () => {
