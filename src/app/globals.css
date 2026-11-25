@@ -271,6 +271,12 @@ dialog.drawer::backdrop {
 .pv-table th:first-child, .pv-table td:first-child { position: sticky; left: 0; z-index: 2; background: var(--pv-surface); border-right: 1px solid var(--pv-border); font-weight: 600; }
 .pv-table thead th:first-child { background: var(--pv-canvas); z-index: 3; }
 .pv-table tbody th { font-size: 14px; color: var(--pv-text); }
+.pv-group-row th { position: static; padding-bottom: 4px; border-bottom: 0; }
+.pv-table thead th.pv-group { text-align: center; color: var(--pv-text); border-bottom: 2px solid var(--pv-border); }
+.pv-details { display: grid; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--pv-border); }
+.pv-details-heading { margin: 0 0 4px; font-size: 12px; font-weight: 650; color: var(--pv-muted); }
+.pv-details-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; font-size: 13px; }
+.pv-details-list li { padding: 3px 0; border-bottom: 1px solid var(--pv-border); overflow-wrap: anywhere; }
 
 /* Prioritised list */
 .pv-switch { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600; cursor: pointer; }

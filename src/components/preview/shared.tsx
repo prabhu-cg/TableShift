@@ -165,3 +165,22 @@ export function PreviewShell({
     </div>
   );
 }
+
+/** Expanded or nested content captured for a row (document lists, nested rows). Absent when there is none. */
+export function RowDetails({ row }: { row: PreviewRow }) {
+  if (row.details.length === 0) return null;
+  return (
+    <div className="pv-details">
+      {row.details.map((d, i) => (
+        <section key={i} className="pv-details-block">
+          {d.heading && <h4 className="pv-details-heading">{d.heading}</h4>}
+          <ul className="pv-details-list">
+            {d.items.map((item, j) => (
+              <li key={j}>{item}</li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  );
+}

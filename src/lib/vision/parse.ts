@@ -75,7 +75,8 @@ export function toTableAnalysis(out: VisionOutput): TableAnalysis {
       const id = idMap.get(key);
       if (id) values[id] = value;
     }
-    return { id: `row-${i + 1}`, values };
+    const details = r.details?.filter((d) => d.heading || d.items.length);
+    return details?.length ? { id: `row-${i + 1}`, values, details } : { id: `row-${i + 1}`, values };
   });
 
   for (const c of columns) {

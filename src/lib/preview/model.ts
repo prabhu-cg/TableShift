@@ -1,13 +1,17 @@
-import type { DataType, Importance, TableAction, TableAnalysis } from "@/types/analysis";
+import type { DataType, Importance, RowDetail, TableAction, TableAnalysis } from "@/types/analysis";
 import { UNREADABLE } from "@/types/analysis";
 import type { Recommendation } from "@/types/recommendation";
 import { columnConfidenceLevel } from "../analysis-assessment";
-import { columnLabel, dataColumns, isIdentifierLike } from "../features";
+import { columnLabel, columnName, dataColumns, isIdentifierLike } from "../features";
 
 /** A source column as the preview renderers see it. Always traceable via `id` / `sourceIndex`. */
 export interface PreviewColumn {
   id: string;
   label: string;
+  /** The column's own header, without its group. Used under a spanning group header. */
+  name: string;
+  /** Spanning header above the column, or empty. */
+  group: string;
   dataType: DataType;
   importance: Importance;
   /** True when the column was not confidently detected; its values are flagged in the preview. */
@@ -33,6 +37,8 @@ export interface PreviewRow {
   /** True when no identifier value was readable and the title is just "Record N". */
   titleIsFallback: boolean;
   cells: Record<string, PreviewCell>;
+  /** Expanded or nested content captured for this row. */
+  details: RowDetail[];
 }
 
 export interface FieldGroup {
@@ -94,6 +100,8 @@ export function buildPreviewModel(
   const columns: PreviewColumn[] = dataColumns(analysis.columns).map((c) => ({
     id: c.id,
     label: columnLabel(c, analysis.columns.indexOf(c)),
+    name: columnName(c, analysis.columns.indexOf(c)),
+    group: c.group?.trim() ?? "",
     dataType: c.dataType,
     importance: c.importance,
     uncertain: columnConfidenceLevel(c) !== "detected",
@@ -135,6 +143,7 @@ export function buildPreviewModel(
       title: hasTitle ? titleCell.text : `Record ${i + 1}`,
       titleIsFallback: !hasTitle,
       cells,
+      details: r.details ?? [],
     };
   });
 

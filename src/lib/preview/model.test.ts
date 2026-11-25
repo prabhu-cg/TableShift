@@ -3,6 +3,7 @@ import type { TableAnalysis } from "@/types/analysis";
 import { UNREADABLE } from "@/types/analysis";
 import { recommend } from "../recommendation/engine";
 import { analysis, appointmentsTable, col, contactsTable, financialTable, wideAdminTable } from "../test-fixtures";
+import { deriveFeatures } from "../features";
 import { clampFullWidth, clampViewport, deviceHeightFor, deviceName, fitScale } from "./viewport";
 import { actionLabel, buildPreviewModel, groupFields, statusTone } from "./model";
 
@@ -148,5 +149,44 @@ describe("viewport", () => {
     expect(fitScale(200, 400)).toBe(0.5);
     expect(fitScale(10, 400)).toBe(0.3);
     expect(fitScale(0, 400)).toBe(1);
+  });
+});
+
+describe("column groups and row details", () => {
+  const base = analysis([
+    col("Fund", "text", "primary"),
+    { ...col("YTD", "number", "secondary"), group: "Performance %" },
+    { ...col("1Y", "number", "secondary"), group: "Performance %" },
+  ]);
+  const grouped: TableAnalysis = {
+    ...base,
+    rows: [
+      {
+        id: "r1",
+        values: { "c-Fund": "Alpha", "c-YTD": "1.2", "c-1Y": "3.4" },
+        details: [{ heading: "Documents", items: ["Factsheet"] }],
+      },
+    ],
+    features: { ...base.features, hasColumnGroups: true, hasRowDetails: true },
+  };
+
+  it("keeps the group in the label and the bare name separately", () => {
+    const m = buildPreviewModel(grouped, null);
+    expect(m.columns.map((c) => c.label)).toEqual(["Fund", "Performance % · YTD", "Performance % · 1Y"]);
+    expect(m.columns[1].name).toBe("YTD");
+    expect(m.columns[1].group).toBe("Performance %");
+  });
+
+  it("carries row details through", () => {
+    const m = buildPreviewModel(grouped, null);
+    expect(m.rows[0].details[0].items).toEqual(["Factsheet"]);
+  });
+
+  it("derives the group and detail feature flags", () => {
+    const derived = deriveFeatures(grouped.columns, grouped.rows, []);
+    expect(derived.hasColumnGroups).toBe(true);
+    expect(derived.hasRowDetails).toBe(true);
+    expect(deriveFeatures(base.columns, base.rows, []).hasColumnGroups).toBe(true);
+    expect(deriveFeatures(contactsTable().columns, [], []).hasRowDetails).toBe(false);
   });
 });

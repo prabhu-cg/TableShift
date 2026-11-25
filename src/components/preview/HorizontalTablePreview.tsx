@@ -39,6 +39,13 @@ function HorizontalTable({ analysis, recommendation, viewportWidth }: MobileLayo
     );
 
   const hasActions = model.actions.length > 0;
+  // Consecutive columns that share a group sit under one spanning header.
+  const spans: { group: string; span: number }[] = [];
+  for (const c of model.columns) {
+    const last = spans[spans.length - 1];
+    if (last && c.group && last.group === c.group) last.span += 1;
+    else spans.push({ group: c.group, span: 1 });
+  }
   return (
     <PreviewShell model={model}>
       <div className="pv-scroll-wrap">
@@ -59,10 +66,20 @@ function HorizontalTable({ analysis, recommendation, viewportWidth }: MobileLayo
           <table className="pv-table" aria-describedby={`${uid}-note`}>
             <caption className="sr-only">Records</caption>
             <thead>
+              {spans.some((s) => s.group) && (
+                <tr className="pv-group-row">
+                  {spans.map((s, i) => (
+                    <th key={i} scope="colgroup" colSpan={s.span} className={s.group ? "pv-group" : undefined}>
+                      {s.group}
+                    </th>
+                  ))}
+                  {hasActions && <th />}
+                </tr>
+              )}
               <tr>
                 {model.columns.map((c) => (
                   <th key={c.id} scope="col">
-                    {c.label}
+                    {c.group ? c.name : c.label}
                   </th>
                 ))}
                 {hasActions && <th scope="col">Actions</th>}

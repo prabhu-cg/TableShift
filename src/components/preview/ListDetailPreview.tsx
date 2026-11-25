@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { buildPreviewModel } from "@/lib/preview/model";
-import { ActionRow, CellValue, EmptyPreview, GroupedFields, IdLabel, PreviewShell } from "./shared";
+import { ActionRow, CellValue, EmptyPreview, GroupedFields, IdLabel, PreviewShell, RowDetails } from "./shared";
 import type { MobileLayoutRendererProps } from "./types";
 
 function ListDetail({ analysis, recommendation }: MobileLayoutRendererProps) {
@@ -62,6 +62,7 @@ function ListDetail({ analysis, recommendation }: MobileLayoutRendererProps) {
           </h3>
           </div>
           <GroupedFields columns={others} row={row} twoUp full />
+          <RowDetails row={row} />
           <ActionRow model={model} rowTitle={row.title} />
         </div>
       </PreviewShell>

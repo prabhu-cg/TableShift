@@ -23,7 +23,12 @@ export const isMeasure = (c: TableColumn) => isNumeric(c) && !isIdentifierLike(c
 export const dataColumns = (columns: TableColumn[]) => columns.filter((c) => c.dataType !== "action");
 
 /** Stable display label for a column (used by the UI and by field lists). */
-export const columnLabel = (c: TableColumn, index: number) => c.name.trim() || `Column ${index + 1}`;
+export const columnName = (c: TableColumn, index: number) => c.name.trim() || `Column ${index + 1}`;
+/** Label that keeps a column's group, so "YTD" under "Performance %" never reads as a bare "YTD". */
+export const columnLabel = (c: TableColumn, index: number) => {
+  const group = c.group?.trim();
+  return group ? `${group} · ${columnName(c, index)}` : columnName(c, index);
+};
 
 /**
  * Deterministically derive table features from columns, rows and actions.
@@ -62,5 +67,7 @@ export function deriveFeatures(
     hasComparableValues,
     hasDenseContent,
     requiresCrossColumnComparison,
+    hasColumnGroups: columns.some((c) => !!c.group?.trim()),
+    hasRowDetails: rows.some((r) => !!r.details?.length),
   };
 }

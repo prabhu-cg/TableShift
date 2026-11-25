@@ -84,6 +84,7 @@ export function ColumnReview({ columns, original, onChange, onReset }: ColumnRev
                     maxLength={120}
                     onChange={(e) => onChange(c.id, { name: e.target.value })}
                   />
+                  {c.group && <p className="mt-1 text-xs text-text-subtle">Group: {c.group}</p>}
                 </div>
                 <div>
                   <label htmlFor={`${c.id}-type`} className="sr-only">

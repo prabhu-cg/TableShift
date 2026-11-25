@@ -2,7 +2,7 @@
 
 import { memo, useId, useMemo, useState } from "react";
 import { buildPreviewModel } from "@/lib/preview/model";
-import { ActionRow, CellValue, EmptyPreview, GroupedFields, IdLabel, PreviewShell } from "./shared";
+import { ActionRow, CellValue, EmptyPreview, GroupedFields, IdLabel, PreviewShell, RowDetails } from "./shared";
 import type { MobileLayoutRendererProps } from "./types";
 
 const SUMMARY_FIELDS = 2;
@@ -83,8 +83,9 @@ function ExpandableTable({ analysis, recommendation }: MobileLayoutRendererProps
               </h3>
               <div id={panelId} role="region" aria-labelledby={headId} hidden={!isOpen} className="pv-acc-panel">
                 <GroupedFields columns={rest} row={row} twoUp full />
+                <RowDetails row={row} />
                 <ActionRow model={model} rowTitle={row.title} />
-                {rest.length === 0 && model.actions.length === 0 && <span className="pv-muted">All fields are shown above.</span>}
+                {rest.length === 0 && model.actions.length === 0 && row.details.length === 0 && <span className="pv-muted">All fields are shown above.</span>}
               </div>
             </li>
           );

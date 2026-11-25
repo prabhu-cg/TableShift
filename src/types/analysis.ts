@@ -24,11 +24,21 @@ export const tableColumnSchema = z.object({
   sampleValues: z.array(z.string().max(200)).max(8),
   importance: z.enum(IMPORTANCE_LEVELS),
   confidence,
+  /** Spanning header above this column (e.g. "Performance %"); empty or absent when ungrouped. */
+  group: z.string().max(80).optional(),
+});
+
+/** A titled list inside an expanded row or detail panel (e.g. "Fund Literature": [...]). */
+export const rowDetailSchema = z.object({
+  heading: z.string().max(80),
+  items: z.array(z.string().max(120)).max(12),
 });
 
 export const tableRowSchema = z.object({
   id: z.string().min(1).max(40),
   values: z.record(z.string(), z.string().max(300)),
+  /** Content visible in an expanded/nested part of this row, if the screenshot shows one open. */
+  details: z.array(rowDetailSchema).max(6).optional(),
 });
 
 export const tableActionSchema = z.object({
@@ -46,6 +56,8 @@ export const tableFeaturesSchema = z.object({
   hasComparableValues: z.boolean(),
   hasDenseContent: z.boolean(),
   requiresCrossColumnComparison: z.boolean(),
+  hasColumnGroups: z.boolean(),
+  hasRowDetails: z.boolean(),
 });
 
 /** What the screenshot appears to contain overall. */
@@ -71,6 +83,7 @@ export const visionOutputSchema = z.object({
 export type VisionOutput = z.infer<typeof visionOutputSchema>;
 
 export type TableColumn = z.infer<typeof tableColumnSchema>;
+export type RowDetail = z.infer<typeof rowDetailSchema>;
 export type TableRow = z.infer<typeof tableRowSchema>;
 export type TableAction = z.infer<typeof tableActionSchema>;
 export type TableFeatures = z.infer<typeof tableFeaturesSchema>;
