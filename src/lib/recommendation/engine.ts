@@ -113,6 +113,9 @@ function buildRationale(s: Scored, rank: number): string {
  * Deterministic recommendation engine. Same analysis in → same recommendations out.
  * AI output only supplies the analysis; it never supplies scores or rankings.
  */
+/** How many options are recommended by default; the rest are offered on request. */
+const TOP_COUNT = 3;
+
 export function recommend(analysis: TableAnalysis): RecommendationSet {
   const ctx = buildContext(analysis);
 
@@ -122,9 +125,7 @@ export function recommend(analysis: TableAnalysis): RecommendationSet {
       b.uncapped - a.uncapped ||
       PATTERN_ORDER.indexOf(a.def.id) - PATTERN_ORDER.indexOf(b.def.id),
   );
-  const top = scored.slice(0, 3);
-
-  const recommendations: Recommendation[] = top.map((s, i) => {
+  const all: Recommendation[] = scored.map((s, i) => {
     const rank = i + 1;
     const fields = partitionFields(s.def, analysis);
     const extra = extraNotes(s.def, ctx);
@@ -152,12 +153,13 @@ export function recommend(analysis: TableAnalysis): RecommendationSet {
   });
 
   return {
-    recommendations,
+    recommendations: all.slice(0, TOP_COUNT),
+    others: all.slice(TOP_COUNT),
     evaluated: scored.map((s, i) => ({
       patternId: s.def.id as PatternId,
       pattern: s.def.name,
       score: s.score,
-      selected: i < 3,
+      selected: i < TOP_COUNT,
     })),
   };
 }

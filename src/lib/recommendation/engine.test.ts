@@ -142,4 +142,14 @@ describe("recommend", () => {
     const measures = analysis([col("Qty", "number", "primary", ["3"]), col("Price", "currency", "secondary", ["$4"])]);
     expect(measures.features.hasComparableValues).toBe(true);
   });
+
+  it("returns the remaining two patterns as ranked lower-fit options", () => {
+    const set = recommend(appointmentsTable());
+    expect(set.recommendations).toHaveLength(3);
+    expect(set.others).toHaveLength(2);
+    expect(set.others.map((o) => o.rank)).toEqual([4, 5]);
+    const ids = [...set.recommendations, ...set.others].map((r) => r.patternId);
+    expect(new Set(ids).size).toBe(5);
+    expect(set.others[0].score).toBeGreaterThanOrEqual(set.others[1].score);
+  });
 });

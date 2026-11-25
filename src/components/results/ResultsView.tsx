@@ -71,8 +71,23 @@ export function ResultsView({ screenshot, analysis, provider, onBack, onRetry }:
   const result = useMemo(() => (assessment.status === "blocked" ? null : recommend(corrected)), [assessment.status, corrected]);
 
   const recs = result?.recommendations ?? [];
-  // Keep the chosen pattern across re-ranking when it is still recommended.
-  const selected = recs.find((r) => r.id === pickedId) ?? recs[0] ?? null;
+  const others = result?.others ?? [];
+  const [showAll, setShowAll] = useState(false);
+  // A lower-ranked option stays visible while it is the one being previewed.
+  const pickedOther = others.some((o) => o.id === pickedId);
+  const listed = showAll || pickedOther ? [...recs, ...others] : recs;
+  // Keep the chosen pattern across re-ranking when it is still available.
+  const selected = [...recs, ...others].find((r) => r.id === pickedId) ?? recs[0] ?? null;
+  const pickerExtras = {
+    otherCount: others.length,
+    showAll: showAll || pickedOther,
+    onToggleAll: () => {
+      if (showAll || pickedOther) {
+        setShowAll(false);
+        if (pickedOther) setPickedId(recs[0]?.id ?? "");
+      } else setShowAll(true);
+    },
+  };
 
   const tablePanelProps = {
     screenshot,
@@ -210,7 +225,7 @@ export function ResultsView({ screenshot, analysis, provider, onBack, onRetry }:
               {isDesktop && sectionTabs}
               {leftSection === "options" ? (
                 <div id="section-panel-options" role="tabpanel" aria-labelledby="section-tab-options" className="space-y-5">
-                  {showStackPicker && <OptionPicker layout="stack" recommendations={recs} value={selected.id} onChange={setPickedId} />}
+                  {showStackPicker && <OptionPicker layout="stack" recommendations={listed} value={selected.id} onChange={setPickedId} {...pickerExtras} />}
                   <RecommendationDetails rec={selected} analysis={corrected} />
                 </div>
               ) : (
@@ -225,7 +240,7 @@ export function ResultsView({ screenshot, analysis, provider, onBack, onRetry }:
               className={`${rightClass} min-w-0 flex-col gap-3 lg:sticky lg:top-4`}
               style={isDesktop && stageHeight ? { height: stageHeight } : undefined}
             >
-              {showRowPicker && <OptionPicker layout="row" recommendations={recs} value={selected.id} onChange={setPickedId} />}
+              {showRowPicker && <OptionPicker layout="row" recommendations={listed} value={selected.id} onChange={setPickedId} {...pickerExtras} />}
               <div className="min-h-0 flex-1">
                 <PreviewWorkspace
                   analysis={corrected}

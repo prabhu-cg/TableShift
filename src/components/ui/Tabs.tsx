@@ -52,7 +52,7 @@ export function Tabs({ items, value, onChange, label, idPrefix, variant = "pill"
       role="tablist"
       aria-label={label}
       className={`${wrap} ${className}`}
-      style={variant === "card" && !stacked ? { gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` } : undefined}
+      style={variant === "card" && !stacked ? { gridTemplateColumns: `repeat(${Math.min(items.length, 3)}, minmax(0, 1fr))` } : undefined}
     >
       {items.map((item, i) => {
         const selected = item.id === value;

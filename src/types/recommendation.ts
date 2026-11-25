@@ -51,6 +51,8 @@ export interface Recommendation {
 
 export interface RecommendationSet {
   recommendations: Recommendation[]; // top three, ranked
+  /** The remaining candidates, fully scored and ranked after the top three. */
+  others: Recommendation[];
   /** All five candidates with scores, for transparency. */
   evaluated: { patternId: PatternId; pattern: string; score: number; selected: boolean }[];
 }

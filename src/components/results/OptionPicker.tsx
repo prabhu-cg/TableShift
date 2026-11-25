@@ -1,6 +1,6 @@
 "use client";
 
-import { Star } from "lucide-react";
+import { ChevronDown, ChevronUp, Star } from "lucide-react";
 import type { Recommendation } from "@/types/recommendation";
 import { Tabs } from "@/components/ui/Tabs";
 import { PATTERN_GUIDANCE } from "@/lib/preview/pattern-guidance";
@@ -11,11 +11,16 @@ interface OptionPickerProps {
   onChange: (id: string) => void;
   /** "stack": ranked rows with a summary (left pane). "row": compact three-up (small screens). */
   layout: "stack" | "row";
+  /** Number of lower-ranked options that can be revealed (0 hides the control). */
+  otherCount?: number;
+  showAll?: boolean;
+  onToggleAll?: () => void;
 }
 
-/** Chooses which of the three recommended layouts is previewed. */
-export function OptionPicker({ recommendations, value, onChange, layout }: OptionPickerProps) {
+/** Chooses which recommended layout is previewed. */
+export function OptionPicker({ recommendations, value, onChange, layout, otherCount = 0, showAll = false, onToggleAll }: OptionPickerProps) {
   return (
+    <div className="space-y-2">
     <Tabs
       variant="card"
       stacked={layout === "stack"}
@@ -38,6 +43,9 @@ export function OptionPicker({ recommendations, value, onChange, layout }: Optio
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                       <span className="font-semibold text-text">{r.pattern}</span>
+                      {r.rank > 3 && (
+                        <span className="rounded-full border border-border px-2 py-0.5 text-[0.6875rem] font-medium text-text-muted">Lower fit</span>
+                      )}
                       {r.rank === 1 && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-[0.6875rem] font-semibold text-primary-text">
                           <Star className="size-3" aria-hidden="true" /> Top
@@ -66,5 +74,17 @@ export function OptionPicker({ recommendations, value, onChange, layout }: Optio
             },
       )}
     />
+    {otherCount > 0 && onToggleAll && (
+      <button
+        type="button"
+        onClick={onToggleAll}
+        aria-expanded={showAll}
+        className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-text-muted transition-colors hover:bg-surface-muted hover:text-text"
+      >
+        {showAll ? <ChevronUp className="size-4" aria-hidden="true" /> : <ChevronDown className="size-4" aria-hidden="true" />}
+        {showAll ? "Show fewer options" : `Show ${otherCount} more ${otherCount === 1 ? "option" : "options"}`}
+      </button>
+    )}
+    </div>
   );
 }
